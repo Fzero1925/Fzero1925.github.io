@@ -1,0 +1,878 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇将完成DAO层的设计与开发，包括：
+
+数据库、DAO实体与接口设计与编码
+基于MyBatis实现DAO编程
+MyBatis与Spring整合
+DAO层单元测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java笔记之高并发秒杀API(二)">
+<meta property="og:url" content="http://yoursite.com/2017/01/05/Java笔记之高并发秒杀API-二/index.html">
+<meta property="og:site_name" content="Fzero">
+<meta property="og:description" content="本篇将完成DAO层的设计与开发，包括：
+
+数据库、DAO实体与接口设计与编码
+基于MyBatis实现DAO编程
+MyBatis与Spring整合
+DAO层单元测试">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-68e4a48796806e64.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-35003fc9d83fd637.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-89c78bfcae665f60.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-01-05T15:06:22.121Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java笔记之高并发秒杀API(二)">
+<meta name="twitter:description" content="本篇将完成DAO层的设计与开发，包括：
+
+数据库、DAO实体与接口设计与编码
+基于MyBatis实现DAO编程
+MyBatis与Spring整合
+DAO层单元测试">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4221394-68e4a48796806e64.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/05/Java笔记之高并发秒杀API-二/"/>
+
+
+
+
+
+  <title> Java笔记之高并发秒杀API(二) | Fzero </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-89586659-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Fzero</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/01/05/Java笔记之高并发秒杀API-二/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Fzero">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/touxiang.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Fzero">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Fzero" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java笔记之高并发秒杀API(二)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-01-05T23:05:18+08:00">
+                2017-01-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇将完成DAO层的设计与开发，包括：</p>
+<ul>
+<li>数据库、DAO实体与接口设计与编码</li>
+<li>基于MyBatis实现DAO编程</li>
+<li>MyBatis与Spring整合</li>
+<li>DAO层单元测试</li>
+</ul>
+<a id="more"></a>
+<h2 id="一、数据库设计与编码"><a href="#一、数据库设计与编码" class="headerlink" title="一、数据库设计与编码"></a>一、数据库设计与编码</h2><p>打开Eclipse，在src\main下建立一个文件夹sql，用于存放建表语句，新建一个SQL文件schema.sql，先创建一个秒杀商品的库存表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">-- 数据库初始化脚本</div><div class="line"></div><div class="line">-- 创建数据库</div><div class="line">CREATE DATABASE seckill;</div><div class="line"></div><div class="line">-- 使用数据库</div><div class="line">USE seckill;</div><div class="line"></div><div class="line">--创建秒杀库存表</div><div class="line">CREATE TABLE seckill(</div><div class="line">`seckill_id` bigint NOT NULL AUTO_INCREMENT COMMENT &apos;商品库存id&apos;,</div><div class="line">`name` varchar(120) NOT NULL COMMENT &apos;商品名称&apos;,</div><div class="line">`number` int NOT NULL COMMENT &apos;库存数量&apos;,</div><div class="line">`start_time` timestamp NOT NULL COMMENT &apos;秒杀开始时间&apos;,</div><div class="line">`end_time` timestamp NOT NULL COMMENT &apos;秒杀结束时间&apos;,</div><div class="line">`create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT &apos;创建时间&apos;,</div><div class="line">PRIMARY KEY (seckill_id),</div><div class="line">key idx_start_time(start_time),</div><div class="line">key idx_end_time(end_time),</div><div class="line">key idx_create_time(create_time)</div><div class="line">)ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 COMMENT=&apos;秒杀库存表&apos;;</div></pre></td></tr></table></figure>
+<p>主键为seckill_id，再单独对start_time、end_time、create_time三列单独建立索引，最后显式的设置MySQL引擎为InnoDB、自增主键初始值设置为1000、编码方式为utf8，并添加注释<br><strong> MySQL默认的有很多引擎，只有InnoDB支持事务 </strong></p>
+<p>可以插入几条数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">-- 初始化数据</div><div class="line">INSERT INTO </div><div class="line">	seckill(name,number,start_time,end_time)</div><div class="line">VALUES</div><div class="line">	(&apos;1000秒杀iPhone6S&apos;,100,&apos;2017-01-01 00:00:00&apos;,&apos;2017-01-02 00:00:00&apos;),</div><div class="line">	(&apos;500秒杀MBP&apos;,200,&apos;2017-01-01 00:00:00&apos;,&apos;2017-01-02 00:00:00&apos;),</div><div class="line">	(&apos;300秒杀iPad&apos;,100,&apos;2017-01-01 00:00:00&apos;,&apos;2017-01-02 00:00:00&apos;),</div><div class="line">	(&apos;200秒杀小米MIX&apos;,300,&apos;2017-01-01 00:00:00&apos;,&apos;2017-01-02 00:00:00&apos;);</div></pre></td></tr></table></figure></p>
+<p>建立秒杀成功明细表，记录秒杀成功的用户信息和商品信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">-- 秒杀成功明细表</div><div class="line">-- 用户登录认证相关的信息</div><div class="line">CREATE TABLE success_killed(</div><div class="line">`seckill_id` bigint NOT NULL COMMENT &apos;秒杀商品id&apos;,</div><div class="line">`user_phone` bigint NOT NULL COMMENT &apos;用户手机号&apos;,</div><div class="line">`state` tinyint NOT NULL DEFAULT -1 COMMENT &apos;状态标识: -1:无效  0:成功  1:已付款  2:已发货&apos;,</div><div class="line">`create_time` timestamp NOT NULL COMMENT &apos;创建时间&apos;,</div><div class="line">PRIMARY KEY(seckill_id,user_phone),/*联合主键 防止用户重复秒杀*/</div><div class="line">key idx_create_time(create_time)</div><div class="line">)ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT=&apos;秒杀成功明细表&apos;;</div></pre></td></tr></table></figure></p>
+<p>create_time就是秒杀成功的时间<br>因为id和phone可以唯一确定一个用户，所以这里要用到联合主键，防止用户重复秒杀一个商品，当然以后也可以为此做过滤<br>数据库的设计完成了，可以在控制台或者数据库管理工具输入上述SQL语句<br><img src="http://upload-images.jianshu.io/upload_images/4221394-68e4a48796806e64.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="创建数据库"></p>
+<h2 id="二、DAO层相关接口编码"><a href="#二、DAO层相关接口编码" class="headerlink" title="二、DAO层相关接口编码"></a>二、DAO层相关接口编码</h2><p>先在java目录下建立两个包：</p>
+<ul>
+<li>org.seckill.entity：数据库对应的实体包</li>
+<li>org.seckill.dao：DAO层接口包</li>
+</ul>
+<p>在org.seckill.entity包下新建实体类Seckill，对应数据库中的seckill表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">public class Seckill &#123;</div><div class="line">	</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	private String name;</div><div class="line">	</div><div class="line">	private int number;</div><div class="line">	</div><div class="line">	private Date startTime;</div><div class="line">	</div><div class="line">	private Date endTime;</div><div class="line">	</div><div class="line">	private Date createTime;</div><div class="line"></div><div class="line">@Override</div><div class="line">	public String toString() &#123;</div><div class="line">		return &quot;Seckill [seckillId=&quot; + seckillId + </div><div class="line">				&quot;, name=&quot; + name + </div><div class="line">				&quot;, number=&quot; + number + </div><div class="line">				&quot;, startTime=&quot; + startTime+ </div><div class="line">				&quot;, endTime=&quot; + endTime + </div><div class="line">				&quot;, createTime=&quot; + createTime + </div><div class="line">				&quot;]&quot;;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后直接生成getter和setter方法，并复写toString方法</p>
+<p>同样在org.seckill.entity包下新建实体类SuccessKilled，对应数据库中的success_killed表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">public class SuccessKilled &#123;</div><div class="line"></div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	private long userPhone;</div><div class="line">	</div><div class="line">	private short state;</div><div class="line">	</div><div class="line">	private Date createTime;</div><div class="line">	</div><div class="line">	private Seckill seckill;</div><div class="line"></div><div class="line">@Override</div><div class="line">	public String toString() &#123;</div><div class="line">		return &quot;SuccessKilled [seckillId=&quot; + seckillId + </div><div class="line">				&quot;, userPhone=&quot; + userPhone + </div><div class="line">				&quot;, state=&quot; + state + </div><div class="line">				&quot;, createTime=&quot; + createTime + </div><div class="line">				&quot;]&quot;;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>直接生成getter和setter方法，并复写toString方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">private Seckill seckill;</div></pre></td></tr></table></figure></p>
+<p>这里实例化了一个Seckill类的对象，因为当用户成功秒杀一个商品时，可能需要完全拿到Seckill的实体</p>
+<p>接着在org.seckill.dao包下新建接口SeckillDao，因为在数据库中seckill表记录的是秒杀商品的库存，所以当用户秒杀成功时，应该对数据库进行操作，也就是减库存<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">   /**</div><div class="line"> * 减库存</div><div class="line"> * @param seckillId</div><div class="line"> * @param killTime</div><div class="line"> * @return 返回受影响的行数</div><div class="line"> */</div><div class="line">int reduceNumber(long seckillId, Date killTime);</div></pre></td></tr></table></figure></p>
+<p>还可以查询秒杀库存表的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">   /**</div><div class="line"> * 根据id查询秒杀对象</div><div class="line"> * @param seckillId 秒杀商品id</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">Seckill queryById(long seckillId);</div><div class="line"></div><div class="line">/**</div><div class="line"> * 根据偏移量查询秒杀商品列表</div><div class="line"> * @param offset 初始位置</div><div class="line"> * @param limit 查询个数</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">List&lt;Seckill&gt; queryAll(int offset, int limit);</div></pre></td></tr></table></figure></p>
+<p>偏移量就是用户可以设置初始位置offset，查询limit个数据</p>
+<p>在org.seckill.dao包下新建接口SuccessKilledDao，当有一个用户在规定时间内成功秒杀一个商品时，进行记录，并且可以根据id查询相应的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 插入购买明细，可过滤重复</div><div class="line"> * @param seckillId</div><div class="line"> * @param userPhone</div><div class="line"> * @return 返回受影响的行数，返回0表示没有插入数据</div><div class="line"> */</div><div class="line">int insertSuccessKilled(long seckillId, long userPhone);</div><div class="line"></div><div class="line">/**</div><div class="line"> * 根据id查询SuccessKilled并携带Seckill实体</div><div class="line"> * @param seckill</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">SuccessKilled queryByIdWithSeckill(long seckillId);</div></pre></td></tr></table></figure></p>
+<p>对于insertSuccessKilled方法，因为id和phone能唯一确定一个用户，所以当有重复出现时，不满足条件，insert语句不执行，返回0<br><strong> 如何设置条件，体现在SQL语句的书写，SQL语句写在下面要用到的MyBatis的xml文件中 </strong></p>
+<p>至此，数据库对应的实体类以及DAO层的接口完成了，而且不用写接口的实现类，因为MyBatis把这些工作都承担了<br>那么这里就可以对DAO层有个初步的了解：<br><strong> DAO层提供了一些接口，这些接口是数据库对应的实体类(即Seckill类和SuccessKilled类)对数据库各种操作(例如:减库存、记录用户信息等)而封装的接口 </strong></p>
+<h2 id="三、基于MyBatis实现DAO层接口"><a href="#三、基于MyBatis实现DAO层接口" class="headerlink" title="三、基于MyBatis实现DAO层接口"></a>三、基于MyBatis实现DAO层接口</h2><p><img src="http://upload-images.jianshu.io/upload_images/4221394-35003fc9d83fd637.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Mybatis框架的作用"><br>数据库与项目之间的映射之前已经实现了，数据库中的表对应org.seckill.entity包下的实体类，数据库中的列对应这些类中的属性，而这些对象要操作数据库，需要中间的映射过程，jdbc、MyBatis、Hibernate等都是工作在这一层，把数据库中的数据映射到对象中，并通过方法，操作数据库</p>
+<p>在DAO层，我们已经写好了接口和方法，但是没有实现类，如果使用jdbc，就要手动的拿到数据库的连接，也要有实现接口的实现类，所以使用成熟的框架可以减少工作量，后期容易维护等许多好处</p>
+<p>这里使用MyBatis，MyBatis对实现DAO层接口提供了两种方法：</p>
+<ul>
+<li>MyBatis内部有一个Mapper机制来自动实现DAO层接口</li>
+<li>通过API编程的方式，MyBatis提供了很多API</li>
+</ul>
+<p>显而易见，大部分都是选择自动实现DAO层接口，这种方法只需设计接口，不需要写实现类，通过配置MyBatis的xml文件，写好SQL语句，其他的工作MyBatis都会自动完成</p>
+<h3 id="1-MyBatis全局配置"><a href="#1-MyBatis全局配置" class="headerlink" title="1.MyBatis全局配置"></a>1.MyBatis全局配置</h3><p>先在src\main\resources下建立一个MyBatis全局的配置文件mybatis-conf.xml，再新建一个mapper目录，用于存放MyBatis的SQL映射</p>
+<p>打开MyBatis全局配置文件mybatis-conf.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE configuration</div><div class="line">  PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;</div><div class="line">  &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;</div></pre></td></tr></table></figure></p>
+<p>将这些内容复制到xml文件中，这些示例都可以在<a href="http://www.mybatis.org/mybatis-3/zh/getting-started.html" target="_blank" rel="external">MyBatis官网上的参考文档</a>中找到</p>
+<p>然后配置一些属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&lt;configuration&gt;</div><div class="line">	&lt;!-- 配置全局属性 --&gt;	</div><div class="line">	&lt;settings&gt;</div><div class="line">	</div><div class="line">		&lt;!-- 使用jdbc的getGenerateKeys获取数据库自增主键值 --&gt;</div><div class="line">		&lt;setting name=&quot;useGeneratedKeys&quot; value=&quot;true&quot;/&gt;</div><div class="line">		</div><div class="line">		&lt;!-- 使用列别名替换列名 默认为true --&gt;</div><div class="line">		&lt;setting name=&quot;useColumnLabel&quot; value=&quot;true&quot;/&gt;</div><div class="line">		</div><div class="line">		&lt;!-- 开启驼峰命名转换:Table(create_time) -&gt; Entity(createTime) --&gt;</div><div class="line">		&lt;setting name=&quot;mapUnderscoreToCamelCase&quot; value=&quot;true&quot;/&gt;</div><div class="line">		</div><div class="line">	&lt;/settings&gt;</div><div class="line">&lt;/configuration&gt;</div></pre></td></tr></table></figure></p>
+<p>使用列别名替换列名，MyBatis默认为true，MyBatis会自动的识别出列别名对应哪个列名，并赋值到entity实体属性中</p>
+<p>前面提到，要实现DAO层的接口可以使用MyBatis的mapper机制，为DAO接口方法提供SQL语句配置，所以在mapper文件夹下创建相应接口的配置文件SeckillDao.xml和SuccessKilledDao.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;!DOCTYPE configuration</div><div class="line">  PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;</div><div class="line">  &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;</div></pre></td></tr></table></figure></p>
+<p>同样，这些内容都要添加到xml文件中</p>
+<h3 id="2-SeckillDao接口SQL语句配置"><a href="#2-SeckillDao接口SQL语句配置" class="headerlink" title="2.SeckillDao接口SQL语句配置"></a>2.SeckillDao接口SQL语句配置</h3><p>打开SeckillDao.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 目的:为DAO接口方法提供SQL语句配置 --&gt;</div><div class="line">&lt;mapper namespace=&quot;org.seckill.dao.SeckillDao&quot;&gt;</div><div class="line">	</div><div class="line">	&lt;update id=&quot;reduceNumber&quot; &gt;</div><div class="line">		update</div><div class="line">			seckill</div><div class="line">		set</div><div class="line">			number = number - 1</div><div class="line">		where seckill_id = #&#123;seckillId&#125;</div><div class="line">		and start_time &lt;![CDATA[ &lt;= ]]&gt; #&#123;startTime&#125;</div><div class="line">		and end_time &gt;= #&#123;endTime&#125;</div><div class="line">		and number &gt; 0;</div><div class="line">	&lt;/update&gt;</div><div class="line">	</div><div class="line">	&lt;select id=&quot;queryById&quot; parameterType=&quot;long&quot; resultType=&quot;Seckill&quot;&gt;</div><div class="line">		select seckill_id,name,number,start_time,end_time,create_time</div><div class="line">		from seckill</div><div class="line">		where seckill_id = #&#123;seckillId&#125;</div><div class="line">	&lt;/select&gt;</div><div class="line">	</div><div class="line">	&lt;select id=&quot;queryAll&quot; resultType=&quot;Seckill&quot;&gt;</div><div class="line">		select seckill_id,name,number,start_time,end_time,create_time</div><div class="line">		from seckill</div><div class="line">		order by create_time desc</div><div class="line">		limit #&#123;offset&#125;,#&#123;limit&#125;</div><div class="line">	&lt;/select&gt;</div><div class="line">	</div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure></p>
+<p>首先是mapper标签中的属性，namespace是对这个mapper的命名，也就是对这个xml文件的命名，这个命名必须在mapper目录下唯一，因为真正的项目中，mapper下的xml文件有很多，如果命名不唯一，MyBatis就不知道要调用哪个xml文件了，一般都是包名.接口名</p>
+<p>接着逐个分析SQL语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">   &lt;update id=&quot;reduceNumber&quot; &gt;</div><div class="line">	update</div><div class="line">		seckill</div><div class="line">	set</div><div class="line">		number = number - 1</div><div class="line">	where seckill_id = #&#123;seckillId&#125;</div><div class="line">	and start_time &lt;![CDATA[ &lt;= ]]&gt; #&#123;killTime&#125;</div><div class="line">	and end_time &gt;= #&#123;killTime&#125;</div><div class="line">	and number &gt; 0;</div><div class="line">&lt;/update&gt;</div></pre></td></tr></table></figure></p>
+<p>因为要实现SeckillDao接口中的减库存的方法，所以使用update语句，id必须在该xml文件下唯一，一般为方法名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int reduceNumber(long seckillId, Date killTime);//SeckillDao接口中定义的方法</div></pre></td></tr></table></figure></p>
+<p>update标签中还有parameterType属性，这里可以不用写，MyBatis可以自动识别<br>where后面有些限制条件，秒杀成功的时间要在规定时间内，要晚于开始时间，早于结束时间，否则update语句不会执行，当库存小于等于0时，也不执行update语句，数据返回类型为int，表示受影响的行数</p>
+<p>至于下面这句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">and start_time &lt;![CDATA[ &lt;= ]]&gt; #&#123;killTime&#125;</div></pre></td></tr></table></figure></p>
+<p>在<a href="http://www.w3school.com.cn/xml/xml_cdata.asp" target="_blank" rel="external">w3school</a>上有详细介绍：</p>
+<blockquote>
+<p>术语 CDATA 指的是不应由 XML 解析器进行解析的文本数据（Unparsed Character Data）。<br>在 XML 元素中，”&lt;” 和 “&amp;” 是非法的。<br>“&lt;” 会产生错误，因为解析器会把该字符解释为新元素的开始。<br>“&amp;” 也会产生错误，因为解析器会把该字符解释为字符实体的开始。<br>某些文本，比如 JavaScript 代码，包含大量 “&lt;” 或 “&amp;” 字符。为了避免错误，可以将脚本代码定义为 CDATA。<br>CDATA 部分中的所有内容都会被解析器忽略。<br>CDATA 部分由 “&lt;![CDATA[“ 开始，由 “]]&gt;” 结束：</p>
+</blockquote>
+<p><strong> 如果xml文件中仅有”&lt;”和”&amp;”，还是建议把它们替换为实体引用 </strong></p>
+<p>接着写完实现其他方法的SQL语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">   &lt;select id=&quot;queryById&quot; parameterType=&quot;long&quot; resultType=&quot;Seckill&quot;&gt;</div><div class="line">	select seckill_id,name,number,start_time,end_time,create_time</div><div class="line">	from seckill</div><div class="line">	where seckill_id = #&#123;seckillId&#125;</div><div class="line">&lt;/select&gt;</div></pre></td></tr></table></figure></p>
+<p>queryById方法实质上是select查询语句，resultType返回的类型是Seckill类，因为自定义的类不在java.lang包下，所以一般是包名.类名，但是后面有方法可以省略包名，这里就只写类名</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Seckill queryById(long seckillId);//SeckillDao接口中定义的方法</div></pre></td></tr></table></figure>
+<p>parameterType为long类型，因为已经开启了驼峰转换，所以可以不适用as进行列名转换</p>
+<p>最后是queryAll方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">   &lt;select id=&quot;queryAll&quot; resultType=&quot;Seckill&quot;&gt;</div><div class="line">	select seckill_id,name,number,start_time,end_time,create_time</div><div class="line">	from seckill</div><div class="line">	order by create_time desc</div><div class="line">	limit #&#123;offset&#125;,#&#123;limit&#125;</div><div class="line">&lt;/select&gt;</div></pre></td></tr></table></figure></p>
+<p>多个参数的话，可以不用给parameterType，结果按降序排列</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">List&lt;Seckill&gt; queryAll(int offset, int limit);//SeckillDao接口中定义的方法</div></pre></td></tr></table></figure>
+<p>对于resultType，无论返回的是List还是Map，只要给出里面的类型就可以</p>
+<h3 id="3-SuccessKilledDao接口SQL语句配置"><a href="#3-SuccessKilledDao接口SQL语句配置" class="headerlink" title="3.SuccessKilledDao接口SQL语句配置"></a>3.SuccessKilledDao接口SQL语句配置</h3><p>打开SuccessKilledDao.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">&lt;mapper namespace=&quot;org.seckill.dao.SuccessKilledDao&quot;&gt;</div><div class="line"></div><div class="line">	&lt;insert id=&quot;insertSuccessKilled&quot;&gt;</div><div class="line">		&lt;!-- 主键冲突:使用ignore忽略报错 insert不执行 返回0 --&gt;</div><div class="line">		insert ignore into success_killed(seckill_id,user_phone)</div><div class="line">		values (#&#123;seckillId&#125;,#&#123;userPhone&#125;)</div><div class="line">	&lt;/insert&gt;</div><div class="line">	</div><div class="line">	&lt;select id=&quot;queryByIdWithSeckill&quot; resultType=&quot;SuccessKilled&quot;&gt;</div><div class="line">		&lt;!-- 根据id查询SuccessKilled并携带Seckill实体 --&gt;</div><div class="line">		&lt;!-- 如何告诉Mybatis把结果映射到SuccessKilled同时映射Seckill属性 --&gt;</div><div class="line">		select</div><div class="line">			sk.seckill_id,</div><div class="line">			sk.user_phone,</div><div class="line">			sk.create_time,</div><div class="line">			sk.state,</div><div class="line">			s.seckill_id &quot;seckill.seckill_id&quot;,</div><div class="line">			s.name &quot;seckill.name&quot;,</div><div class="line">			s.start_time &quot;seckill.start_time&quot;,</div><div class="line">			s.end_time &quot;seckill.end_time&quot;,</div><div class="line">			s.create_time &quot;seckill.create_time&quot;</div><div class="line">		from success_killed sk</div><div class="line">		inner join seckill s on sk.seckill_id = s.seckill_id</div><div class="line">		where sk.seckill_id = #&#123;seckillId&#125;</div><div class="line">	&lt;/select&gt;</div><div class="line">	</div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure></p>
+<p>简单说下insertSuccessKilled方法，在src\main\sql目录下有个schema.sql文件，里面是建表语句，在建立success_killed表的时候设置了一个联合主键，是防止用户重复秒杀的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">PRIMARY KEY(seckill_id,user_phone)</div></pre></td></tr></table></figure></p>
+<p>所以id和phone只要有一个重复，insert语句就会报错，对于这种错误，其实只要不执行insert即可，不需要每次都报错，所以使用ignore关键字，当有主键冲突时，忽略报错，insert语句不会执行，结果返回0，说明没有插入数据</p>
+<p>对于queryByIdWithSeckill方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">   &lt;select id=&quot;queryByIdWithSeckill&quot; resultType=&quot;SuccessKilled&quot;&gt;</div><div class="line">	&lt;!-- 根据id查询SuccessKilled并携带Seckill实体 --&gt;</div><div class="line">	&lt;!-- 如何告诉Mybatis把结果映射到SuccessKilled同时映射Seckill属性 --&gt;</div><div class="line">	select</div><div class="line">		sk.seckill_id,</div><div class="line">		sk.user_phone,</div><div class="line">		sk.create_time,</div><div class="line">		sk.state,</div><div class="line">		s.seckill_id &quot;seckill.seckill_id&quot;,</div><div class="line">		s.name &quot;seckill.name&quot;,</div><div class="line">		s.start_time &quot;seckill.start_time&quot;,</div><div class="line">		s.end_time &quot;seckill.end_time&quot;,</div><div class="line">		s.create_time &quot;seckill.create_time&quot;</div><div class="line">	from success_killed sk</div><div class="line">	inner join seckill s on sk.seckill_id = s.seckill_id</div><div class="line">	where sk.seckill_id = #&#123;seckillId&#125;</div><div class="line">&lt;/select&gt;</div></pre></td></tr></table></figure></p>
+<p>首先要明确的是这个方法的作用，是根据id查询SuccessKilled并携带Seckill实体</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SuccessKilled queryByIdWithSeckill(long seckillId);//SuccessKilledDao接口中定义的方法</div></pre></td></tr></table></figure>
+<p>返回SuccessKilled类型，在这个类中，实例化了Seckill类</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">from success_killed sk</div><div class="line">inner join seckill s on sk.seckill_id = s.seckill_id</div><div class="line">where sk.seckill_id = #&#123;seckillId&#125;</div></pre></td></tr></table></figure>
+<p>from success_killed表，再使用内连接的方式使seckill表加入进来，on后面表示两个表通过相同的id进行连接，id的值为传进来的参数seckillId的值<br>在MyBatis中可以忽略as关键字</p>
+<p>那么如何告诉Mybatis把结果映射到SuccessKilled同时映射Seckill属性，首先可以得到sk表即success_killed表中的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">sk.seckill_id,</div><div class="line">sk.user_phone,</div><div class="line">sk.create_time,</div><div class="line">sk.state,</div></pre></td></tr></table></figure></p>
+<p>sk.seckill_id虽然使用了别名，但是MyBatis会忽略别名，所以MyBatis视为从sk表中的seckill_id列取数据，再返回数据到Java，又因为在MyBatis全局配置文件中开启了驼峰命名转换，所以seckill_id就变成了seckillId，赋值给相应的变量，这就是使用框架的好处</p>
+<p>取到了数据，映射到了SuccessKilled中，又怎么同时映射Seckill属性呢？<br>在SuccessKilled类中，直接实例化了Seckill类，并生成了getter和setter方法<br><img src="http://upload-images.jianshu.io/upload_images/4221394-89c78bfcae665f60.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="SuccessKilled类中的实例化Seckill类"><br>success_killed和seckill两个表又通过内连接的方式进行了连接，所以可以直接在select后面这样写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">s.seckill_id &quot;seckill.seckill_id&quot;,</div><div class="line">s.name &quot;seckill.name&quot;,</div><div class="line">s.start_time &quot;seckill.start_time&quot;,</div><div class="line">s.end_time &quot;seckill.end_time&quot;,</div><div class="line">s.create_time &quot;seckill.create_time&quot;</div></pre></td></tr></table></figure></p>
+<p>前面说过，MyBatis会忽略别名，所以这里要在后面表明，这些列是来自哪个表的，这种写法实际是OGNL表达式，据说在Struts上很常见，但是在MyBatis的xml文件中也经常用到，所以还是要多了解下</p>
+<p>到这里，MyBatis实现DAO层接口完成了</p>
+<h2 id="四、MyBatis与Spring整合"><a href="#四、MyBatis与Spring整合" class="headerlink" title="四、MyBatis与Spring整合"></a>四、MyBatis与Spring整合</h2>
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/01/Java笔记之高并发秒杀API-一/" rel="next" title="Java笔记之高并发秒杀API(一)">
+                <i class="fa fa-chevron-left"></i> Java笔记之高并发秒杀API(一)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/touxiang.JPG"
+               alt="Fzero" />
+          <p class="site-author-name" itemprop="name">Fzero</p>
+          <p class="site-description motion-element" itemprop="description">在迷踪岛满级的熊猫信仰贼</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一、数据库设计与编码"><span class="nav-number">1.</span> <span class="nav-text">一、数据库设计与编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二、DAO层相关接口编码"><span class="nav-number">2.</span> <span class="nav-text">二、DAO层相关接口编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三、基于MyBatis实现DAO层接口"><span class="nav-number">3.</span> <span class="nav-text">三、基于MyBatis实现DAO层接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-MyBatis全局配置"><span class="nav-number">3.1.</span> <span class="nav-text">1.MyBatis全局配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-SeckillDao接口SQL语句配置"><span class="nav-number">3.2.</span> <span class="nav-text">2.SeckillDao接口SQL语句配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-SuccessKilledDao接口SQL语句配置"><span class="nav-number">3.3.</span> <span class="nav-text">3.SuccessKilledDao接口SQL语句配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四、MyBatis与Spring整合"><span class="nav-number">4.</span> <span class="nav-text">四、MyBatis与Spring整合</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fzero</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
