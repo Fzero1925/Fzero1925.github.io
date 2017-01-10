@@ -1,0 +1,896 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇将完成Service层的设计与开发，包括：
+
+秒杀业务接口设计与实现
+基于Spring托管Service实现类
+配置Spring声明式事务
+Service层集成测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java笔记之高并发秒杀API(三)">
+<meta property="og:url" content="http://yoursite.com/2017/01/11/Java笔记之高并发秒杀API-三/index.html">
+<meta property="og:site_name" content="Fzero">
+<meta property="og:description" content="本篇将完成Service层的设计与开发，包括：
+
+秒杀业务接口设计与实现
+基于Spring托管Service实现类
+配置Spring声明式事务
+Service层集成测试">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-e9dc2fff5f6e739e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-ea65fbc36f947f9e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-b7ef279790342646.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-fdebea323a89a093.png">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-ba73287c8898e062.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-331a01d7abc0b242.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-dc9b239ed4f15264.png">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-abd2947816d76232.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-01-10T17:26:24.607Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java笔记之高并发秒杀API(三)">
+<meta name="twitter:description" content="本篇将完成Service层的设计与开发，包括：
+
+秒杀业务接口设计与实现
+基于Spring托管Service实现类
+配置Spring声明式事务
+Service层集成测试">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4221394-e9dc2fff5f6e739e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/11/Java笔记之高并发秒杀API-三/"/>
+
+
+
+
+
+  <title> Java笔记之高并发秒杀API(三) | Fzero </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-89586659-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Fzero</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/01/11/Java笔记之高并发秒杀API-三/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Fzero">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/touxiang.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Fzero">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Fzero" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java笔记之高并发秒杀API(三)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Дата создания записи" itemprop="dateCreated datePublished" datetime="2017-01-11T01:24:52+08:00">
+                2017-01-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇将完成Service层的设计与开发，包括：</p>
+<ul>
+<li>秒杀业务接口设计与实现</li>
+<li>基于Spring托管Service实现类</li>
+<li>配置Spring声明式事务</li>
+<li>Service层集成测试</li>
+</ul>
+<a id="more"></a>
+<h2 id="秒杀业务接口设计"><a href="#秒杀业务接口设计" class="headerlink" title="秒杀业务接口设计"></a>秒杀业务接口设计</h2><p>在org.seckill包下创建Service层需要的包：</p>
+<ul>
+<li>service：存放Service接口和实现类</li>
+<li>exception：存放Service接口所需要的一些自定义异常，比如重复秒杀、秒杀关闭等</li>
+<li>dto：数据传输层，和entity有些类似，都是存放表示数据的一些类型，entity关注的是业务上的一些封装，dto关注的是WEB和Service之间的数据传递</li>
+</ul>
+<p>接着在service包下新建一个SeckillService接口</p>
+<p>首先要做一个列表页的话，就要拿到Seckill的所有属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 查询所有秒杀商品记录</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">List&lt;Seckill&gt; getSeckillList();</div><div class="line"></div><div class="line">/**</div><div class="line"> * 查询单个秒杀商品记录</div><div class="line"> * @param seckillId</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">Seckill getById(long seckillId);</div></pre></td></tr></table></figure></p>
+<p>这是基本的查询方法，接下来是一些行为的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 秒杀开启时输出秒杀接口地址</div><div class="line"> * 否则输出系统时间和秒杀时间</div><div class="line"> * @param seckillId</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">Exposer exportSeckillUrl(long seckillId);</div></pre></td></tr></table></figure>
+<p>在秒杀活动开始之前，要保证没有人知道秒杀接口的地址，不能让用户通过url规则拼出来秒杀活动的地址，所以这个方法在秒杀活动开启时输出秒杀接口地址，否则输出系统时间和秒杀时间</p>
+<p>那么这个方法返回的类型是什么呢？活动期间，这个方法返回的是秒杀接口地址url，不在活动期间，返回的是一些日期，都是和业务部相关的一些数据，所以我们需要一个dto</p>
+<p>在dto包下新建一个Exposer类，用来暴露秒杀接口，或者输出日期<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 暴露秒杀地址DTO</div><div class="line"> * @author Fzero</div><div class="line"> *</div><div class="line"> */</div><div class="line">public class Exposer &#123;</div><div class="line">	</div><div class="line">	//是否开启秒杀</div><div class="line">	private boolean exposed;</div><div class="line">	</div><div class="line">	//加密措施</div><div class="line">	private String md5;</div><div class="line">	</div><div class="line">	//id</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	//系统当前时间（毫秒）</div><div class="line">	private long now;</div><div class="line">	</div><div class="line">	//秒杀开启时间</div><div class="line">	private long start;</div><div class="line">	</div><div class="line">	//秒杀结束时间</div><div class="line">	private long end;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public String toString() &#123;</div><div class="line">		return &quot;Exposer [exposed=&quot; + exposed + </div><div class="line">				&quot;, md5=&quot; + md5 + </div><div class="line">				&quot;, seckillId=&quot; + seckillId + </div><div class="line">				&quot;, now=&quot; + now + </div><div class="line">				&quot;, start=&quot; + start + </div><div class="line">				&quot;, end=&quot; + end + </div><div class="line">				&quot;]&quot;;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先是设置一个开关exposerd，判断秒杀接口是否要暴露，对于暴露的接口，还要对接口进行一下改动，加上简单的md5，还有上面说的系统时间和秒杀时间，复写toString方法，使得日志输出的时候方便获取属性值，并生成get和set方法</p>
+<p>为了方便初始化，需要设置几个构造方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">public Exposer(boolean exposed, String md5, long seckillId) &#123;</div><div class="line">	super();</div><div class="line">	this.exposed = exposed;</div><div class="line">	this.md5 = md5;</div><div class="line">	this.seckillId = seckillId;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果在秒杀活动期内，存储MD5，如果不在活动期内，MD5的值为空</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public Exposer(boolean exposed, long seckillId, long now, long start, long end) &#123;</div><div class="line">	super();</div><div class="line">	this.exposed = exposed;</div><div class="line">	this.seckillId = seckillId;</div><div class="line">	this.now = now;</div><div class="line">	this.start = start;</div><div class="line">	this.end = end;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果不在秒杀活动期，返回系统时间和秒杀活动开启、关闭时间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">public Exposer(boolean exposed, long seckillId) &#123;</div><div class="line">	super();</div><div class="line">	this.exposed = exposed;</div><div class="line">	this.seckillId = seckillId;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>是否开启秒杀，返回seckillId</p>
+<p>Exposer类完成，返回SeckillService接口</p>
+<p>接下来就是执行秒杀操作的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 执行秒杀操作</div><div class="line"> * @param seckillId</div><div class="line"> * @param userPhone</div><div class="line"> * @param md5</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">SeckillExecution executeSeckill(long seckillId, long userPhone, String md5);</div></pre></td></tr></table></figure></p>
+<p>之前说过，唯一确定一个用户的方法是seckillId和phone，seckillId加上自定义的盐值，通过MD5加密，一定程度上能够防止用户通过url规则拼出秒杀接口地址，因为Exposer方法先被调用，里面有MD5的值，传递进来的MD5的值要和内部生成的一个MD5规则进行比较，如果不吻合，说明用户的url被篡改了，不执行秒杀操作，返回的类型还要再封装一个DTO接口，用来封装秒杀执行后的结果，那么秒杀执行后的结果需要什么数据呢？秒杀成功了还是失败了？如果失败了，还要知道为什么失败了</p>
+<p>在dto包下新建一个SeckillExecution类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">public class SeckillExecution &#123;</div><div class="line">	</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	//秒杀结果执行后的状态</div><div class="line">	private int state;</div><div class="line">	</div><div class="line">	//状态信息</div><div class="line">	private String stateInfo;</div><div class="line"></div><div class="line">	//秒杀成功对象</div><div class="line">	private SuccessKilled successKilled;</div><div class="line">	</div><div class="line">	@Override</div><div class="line">	public String toString() &#123;</div><div class="line">		return &quot;SeckillExecution [seckillId=&quot; + </div><div class="line">				&quot;&quot; + seckillId + </div><div class="line">				&quot;, state=&quot; + state + </div><div class="line">				&quot;, stateInfo=&quot; + stateInfo+ </div><div class="line">				&quot;, successKilled=&quot; + successKilled + </div><div class="line">				&quot;]&quot;;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里需要实例化SuccessKilled对象，如果秒杀成功，要能获得成功秒杀商品的用户信息，接着直接生成get和set方法，还要初始化几个构造方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">public SeckillExecution(long seckillId, SeckillStateEnum stateEnum, SuccessKilled successKilled) &#123;</div><div class="line">	super();</div><div class="line">	this.seckillId = seckillId;</div><div class="line">	this.state = stateEnum.getState();</div><div class="line">	this.stateInfo = stateEnum.getStateString();</div><div class="line">	this.successKilled = successKilled;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>秒杀成功后，返回所有的属性值</p>
+<p>在数据库success_killed表中，有state作为状态标识，不同的数字表示不同的状态，在接下来的代码中，也经常用到这些状态标识，但是这些状态标识和状态信息，应该是输出给前端的，这个是属于数据字典中的，没必要在代码中频繁出现，像这种常量，建议使用枚举表示，所以在org.seckill包下新建一个枚举包enums，新建一个枚举类型的文件SeckillStateEnum<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">public enum SeckillStateEnum &#123;</div><div class="line"></div><div class="line">	SUCCESS(1, &quot;秒杀成功&quot;),</div><div class="line">	END(0, &quot;秒杀结束&quot;),</div><div class="line">	REPEAT_KILL(-1, &quot;重复秒杀&quot;),</div><div class="line">	INNER_ERROR(-2, &quot;系统异常&quot;),</div><div class="line">	DATA_REWRITE(-2, &quot;数据篡改&quot;);</div><div class="line">	</div><div class="line">	private int state;</div><div class="line">	</div><div class="line">	private String stateString;</div><div class="line"></div><div class="line">	private SeckillStateEnum(int state, String stateString) &#123;</div><div class="line">		this.state = state;</div><div class="line">		this.stateString = stateString;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>初始化一个构造方法，并生成get方法</p>
+<p>接着创建一个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public static SeckillStateEnum stateOf(int index)&#123;</div><div class="line">	for(SeckillStateEnum state : values())&#123;</div><div class="line">		if(state.getState() == index)&#123;</div><div class="line">			return state;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	return null;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>返回state状态标识，可以通过状态标识获得相应的状态信息，本项目的数据字典已经完成了</p>
+<p>在dto包下的SeckillExecution类还要再初始化一个构造方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">public SeckillExecution(long seckillId, SeckillStateEnum stateEnum) &#123;</div><div class="line">	super();</div><div class="line">	this.seckillId = seckillId;</div><div class="line">	this.state = stateEnum.getState();</div><div class="line">	this.stateInfo = stateEnum.getStateString();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>秒杀失败后返回相应的状态信息</p>
+<p>这时还有个小问题，就是当执行异常的时候，要告知接口使用方这个方法可能会输出什么样的异常，因为跟业务相关的异常可以利用起来</p>
+<p>在存放异常的exception包下新建一个SeckillException类，异常一般是作为通用的接口或类，解决某一层面的问题<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 秒杀业务相关异常</div><div class="line"> * @author Fzero</div><div class="line"> *</div><div class="line"> */</div><div class="line">public class SeckillException extends RuntimeException &#123;</div><div class="line"></div><div class="line">	public SeckillException(String message, Throwable cause) &#123;</div><div class="line">		super(message, cause);</div><div class="line">		// TODO Auto-generated constructor stub</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public SeckillException(String message) &#123;</div><div class="line">		super(message);</div><div class="line">		// TODO Auto-generated constructor stub</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>继承与RuntimeException，初始化两个构造方法</p>
+<p>这个异常本质上是一个运行期异常，运行期异常不需要手动的try/catch，使用运行期异常还有个重要的原因，就是<strong> Spring的声明式事务，它只接收运行期异常回滚策略，也就是当抛出一个非运行期异常，Spring的声明式事务不会帮我们做回滚的 </strong></p>
+<p>接着可以定义一些业务中比较常见的异常，可以单独捕捉或处理</p>
+<p>新建一个RepeatKillException类，从名字可以看出，处理的是重复秒杀的异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 重复秒杀异常（运行期异常）</div><div class="line"> * @author Fzero</div><div class="line"> *</div><div class="line"> */</div><div class="line">public class RepeatKillException extends SeckillException &#123;</div><div class="line"></div><div class="line">	public RepeatKillException(String message, Throwable cause) &#123;</div><div class="line">		super(message, cause);</div><div class="line">		// TODO Auto-generated constructor stub</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public RepeatKillException(String message) &#123;</div><div class="line">		super(message);</div><div class="line">		// TODO Auto-generated constructor stub</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>再新建一个SeckillCloseException类，秒杀关闭异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 秒杀关闭异常</div><div class="line"> * @author Fzero</div><div class="line"> *</div><div class="line"> */</div><div class="line">public class SeckillCloseException extends SeckillException &#123;</div><div class="line"></div><div class="line">	public SeckillCloseException(String message, Throwable cause) &#123;</div><div class="line">		super(message, cause);</div><div class="line">		// TODO Auto-generated constructor stub</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public SeckillCloseException(String message) &#123;</div><div class="line">		super(message);</div><div class="line">		// TODO Auto-generated constructor stub</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>秒杀活动关闭后，秒杀的执行不能被允许，比如时间到了，或者库存消耗光了</p>
+<h2 id="秒杀接口实现"><a href="#秒杀接口实现" class="headerlink" title="秒杀接口实现"></a>秒杀接口实现</h2><p>在service包下新建一个impl包，用于存放实现Service接口的实现类，新建一个SeckillService接口的实现类SeckillServiceImpl，然后复写SeckillService的四个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">public class SeckillServiceImpl implements SeckillService &#123;</div><div class="line">	</div><div class="line">	private Logger logger = LoggerFactory.getLogger(this.getClass());</div><div class="line">	</div><div class="line">	private SeckillDao seckillDao;</div><div class="line"></div><div class="line">	private SuccessKilledDao successKilledDao;</div><div class="line">	</div><div class="line">	//MD5盐值字符串，用户混淆MD5</div><div class="line">	private final String slat = &quot;sldjflsjdfwiejfwjefi$&amp;**(&amp;*&amp;&quot;;</div><div class="line"></div><div class="line">	public List&lt;Seckill&gt; getSeckillList() &#123;</div><div class="line">		return seckillDao.queryAll(0, 4);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	public Seckill getById(long seckillId) &#123;</div><div class="line">		return seckillDao.queryById(seckillId);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里要用DAO中的接口，把之前设计的两个接口实例化并生成get方法，但不初始化，因为所有DAO接口的实现类都在Spring容器当中，然后是实例化日志对象，导入org.slf4j包，接着修改复写的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">public Exposer exportSeckillUrl(long seckillId) &#123;</div><div class="line">	Seckill seckill = seckillDao.queryById(seckillId);</div><div class="line">	if(seckill == null)&#123;</div><div class="line">		return new Exposer(false, seckillId);</div><div class="line">	&#125;</div><div class="line">	Date startTime = seckill.getStartTime();</div><div class="line">	Date endTime = seckill.getEndTime();</div><div class="line">	Date nowTime = new Date();//系统当前时间</div><div class="line">	if(nowTime.getTime() &lt; startTime.getTime() || nowTime.getTime() &gt; endTime.getTime())&#123;</div><div class="line">		return new Exposer(false, seckillId, nowTime.getTime(), startTime.getTime(), endTime.getTime());</div><div class="line">	&#125;</div><div class="line">	String md5 = getMD5(seckillId);</div><div class="line">	return new Exposer(true, md5, seckillId);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个方法就是用于显示秒杀接口的地址，首先要进行一个判断，如果seckill为空，就返回一个Exposer，使用Exposer中的构造方法，如果不为空，但是不在秒杀活动期内，就返回秒杀活动的开始时间、结束时间和系统时间，最后既然都判断完了，时间在秒杀活动内，就要返回秒杀开启的一些信息，通过返回的MD5才能与用户输入的地址是否正确</p>
+<p>为了不让用户猜到返回值，前面已经定义了一个用于混淆的值slat，越复杂越好，然后创建一个方法，生成MD5<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">private String getMD5(long seckillId)&#123;</div><div class="line">	String base = seckillId + &quot;/&quot; + slat;</div><div class="line">	String md5 = DigestUtils.md5DigestAsHex(base.getBytes());</div><div class="line">	return md5;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果只使用id进行MD5加密的话，实际上用户是可以通过算法跑出来的，如果加上混淆的字符串，几乎是不可能的</p>
+<p>最后要完成的是执行秒杀方法的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">public SeckillExecution executeSeckill(long seckillId, long userPhone, String md5) &#123;</div><div class="line">	if(md5 == null || !md5.equals(getMD5(seckillId)))&#123;</div><div class="line">		throw new SeckillException(&quot;seckill data rewrite&quot;);</div><div class="line">	&#125;</div><div class="line">	//执行秒杀逻辑：减库存 + 记录购买行为</div><div class="line">	Date nowTime = new Date();</div><div class="line">	try &#123;</div><div class="line">		//减库存</div><div class="line">		int updateCount = seckillDao.reduceNumber(seckillId, nowTime);</div><div class="line">		if(updateCount &lt;= 0)&#123;</div><div class="line">			//没有更新记录，即秒杀活动结束</div><div class="line">			throw new SeckillCloseException(&quot;seckill is closed&quot;);</div><div class="line">		&#125; else &#123;</div><div class="line">			//记录购买行为</div><div class="line">			int insertCount = successKilledDao.insertSuccessKilled(seckillId, userPhone);</div><div class="line">			if(insertCount &lt;= 0)&#123;</div><div class="line">				//重复秒杀</div><div class="line">				throw new RepeatKillException(&quot;seckill repeated&quot;);</div><div class="line">			&#125; else &#123;</div><div class="line">				//秒杀成功</div><div class="line">				SuccessKilled successKilled = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);</div><div class="line">				return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, successKilled);</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125; catch(SeckillCloseException e1) &#123;</div><div class="line">		throw e1;</div><div class="line">	&#125; catch(RepeatKillException e2)&#123;</div><div class="line">		throw e2;</div><div class="line">	&#125; catch (Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">		//所有编译期异常转化为运行期异常</div><div class="line">		throw new SeckillException(&quot;seckill inner error: &quot; + e.getMessage());</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先要判断用户传递过来的MD5是否和我们设置的MD5的值是否相同，不相同或是空的话，抛出一个SeckillException异常</p>
+<p>成功秒杀后，就要执行秒杀逻辑，即减库存+记录购买行为，以系统当前时间为秒杀时间，reduceNumber方法还能判断秒杀时间是否在活动时间内，如果返回的值小于等于0，说明没有更新记录，即秒杀活动结束了</p>
+<p>成功减库存后，就要记录购买行为了，同样进行判断，如果返回值小于等于0 说明重复秒杀，insert语句不执行，如果秒杀成功，返回SuccessKilled对象</p>
+<p>最后，整个逻辑要try/catch，因为可能会有其他的异常，比如超时、链接断开等，并抛出业务异常，因为SeckillException继承自RuntimeException，所以这里就把编译期异常，转化为运行期异常，这样Spring的声明式事务可以帮我们做回滚操作，因为之前方法中会可能有指定的异常，比如重复秒杀，秒杀关闭等，所以在SeckillException父类异常之前catch住，然后抛出</p>
+<p>至此，Service层接口的实现类完成了</p>
+<h2 id="基于Spring管理Service依赖"><a href="#基于Spring管理Service依赖" class="headerlink" title="基于Spring管理Service依赖"></a>基于Spring管理Service依赖</h2><p>管理Service，本质上是通过Spring IOC功能，即依赖注入<br><img src="http://upload-images.jianshu.io/upload_images/4221394-e9dc2fff5f6e739e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Spring IOC"><br>对于Spring IOC，首先会有一个创建对象的过程，也就是对象工厂，这个工厂可以创建SeckillService的实现</p>
+<p>而SeckillService也需要众多依赖，比如DAO层的依赖，所以Spring IOC不但帮我们创建SeckillDAO和SuccessKilledDAO的实现，还要创建Service层的实现，并且把这些实现组成依赖，最终提供一个一直的访问接口，通过这个接口，我们可以访问工厂当中任意的实例</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-ea65fbc36f947f9e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="业务对象依赖"><br>SeckillService依赖DAO层的两个接口，DAO的接口依赖于SqlSessionFactory，而SqlSessionFactory也需要数据源等一些依赖，整个这个初始化过程，都是由Spring自动组装好，最后给我们的是一个SeckillService，一个完整的实例</p>
+<p>在resources/spring包下新建一个spring-service.xml，可以把spring-dao.xml中beans标签中的内容复制过来，当然，在这基础场在添加三行内容，关于tx的命名空间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;</div><div class="line">    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</div><div class="line">    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;</div><div class="line">    xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;</div><div class="line">    xsi:schemaLocation=&quot;</div><div class="line">    	http://www.springframework.org/schema/beans</div><div class="line">        http://www.springframework.org/schema/beans/spring-beans.xsd</div><div class="line">        http://www.springframework.org/schema/context</div><div class="line">        http://www.springframework.org/schema/context/spring-context.xsd</div><div class="line">        http://www.springframework.org/schema/tx</div><div class="line">        http://www.springframework.org/schema/tx/spring-tx.xsd&quot;&gt;</div><div class="line">&lt;beans&gt;</div></pre></td></tr></table></figure></p>
+<p>首先配置的是扫描service包下所有使用注解的类型<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 扫描service包下所有使用注解的依赖 --&gt;</div><div class="line">&lt;context:component-scan base-package=&quot;org.seckill.service&quot;/&gt;</div></pre></td></tr></table></figure></p>
+<p>扫描后会初始化这些类型，然后放到Spring容器当中，如果这些类型中有其他的依赖，比如SeckillServiceImpl类中有SeckillDao和SuccessKilledDao的依赖，这个配置也会初始化这些依赖</p>
+<p>那么是哪些注解？首先是@Component，代表所有的组件，当不清楚这个类或者属性是属于DAO或者是Service的时候，可以使用这个,当然还有@Service、@Dao、@Conroller等</p>
+<p>对于SeckillServiceImpl，很明显，在类上添加@Service注解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@Service</div><div class="line">public class SeckillServiceImpl implements SeckillService</div></pre></td></tr></table></figure></p>
+<p>同样，在SeckillServiceImpl方法中，对于seckillDao属性和successKillDao属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">//注入Service依赖</div><div class="line">@Autowired</div><div class="line">private SeckillDao seckillDao;</div><div class="line"></div><div class="line">@Autowired</div><div class="line">private SuccessKilledDao successKilledDao;</div></pre></td></tr></table></figure></p>
+<p>MyBatis和Spring整合之后，MyBatis下所有的DAO接口都会使用mapper的方式初始化好，然后放到Spring容器当中，要在Spring容器中获取DAO的实例，并注入到Service中，可以使用Spring提供的注解@Autowired，使用之后，它就会在Spring容器中查找SeckillDao的实例，因为之前MyBatis的mapper已经初始化好并放在Spring容器中，所以就会注入到Service的属性中，不需要手动的new一个</p>
+<h2 id="Spring声明式事务"><a href="#Spring声明式事务" class="headerlink" title="Spring声明式事务"></a>Spring声明式事务</h2><p><img src="http://upload-images.jianshu.io/upload_images/4221394-b7ef279790342646.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="声明式事务基本流程"><br>声明式事务的基本流程，先是开启事务，然后修改SQL语句，最后再提交或回滚事务</p>
+<p>由于<strong> Spring只有在抛出运行期异常（RuntimeException)时才会执行回滚操作 </strong>，所以在代码中要小心使用try/catch，当异常被捕捉到的时候，Spring接收不到异常，就不会执行回滚操作</p>
+<p>打开spring-service.xml，开始配置Spring声明式事务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 配置事务管理器 --&gt;</div><div class="line">&lt;bean id=&quot;transactionManager&quot; class=&quot;org.springframework.jdbc.datasource.DataSourceTransactionManager&quot;&gt;</div><div class="line">	&lt;!-- 注入数据库连接池 --&gt;</div><div class="line">	&lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot;&gt;&lt;/property&gt;</div><div class="line">&lt;/bean&gt;</div></pre></td></tr></table></figure></p>
+<p>只要用到事务，首先配置的就是事务管理器，MyBatis默认的是jdbc的事务管理器，接着注入数据库连接池</p>
+<p>然后配置基于注解的声明式事务，这个配置的作用就是默认使用注解来管理事务行为<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 配置基于注解的声明式事务:默认使用注解来管理事务行为 --&gt;</div><div class="line">&lt;tx:annotation-driven transaction-manager=&quot;transactionManager&quot;/&gt;</div></pre></td></tr></table></figure></p>
+<p>打开SeckillServiceImpl类，在executeSeckill方法上添加@Transactional注解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@Transactional</div><div class="line">public SeckillExecution executeSeckill(long seckillId, long userPhone, String md5)</div></pre></td></tr></table></figure></p>
+<p>不是所有的方法都要在事务的控制之下，比如只读，所以只在会对数据库进行更新操作的方法上添加Spring的声明式事务注解，这样就可以保证该方法运行在事务的控制之下，防止数据被错误的修改</p>
+<h2 id="五、Service层集成测试"><a href="#五、Service层集成测试" class="headerlink" title="五、Service层集成测试"></a>五、Service层集成测试</h2><p>对SeckillService类生成相应的测试类，选中所有的方法，同样在类上加上@RunWith和@ContextConfiguration注解<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@RunWith(SpringJUnit4ClassRunner.class)</div><div class="line">@ContextConfiguration(&#123;</div><div class="line">	&quot;classpath:spring/spring-dao.xml&quot;,</div><div class="line">	&quot;classpath:spring/spring-service.xml&quot;</div><div class="line">&#125;)</div><div class="line">public class SeckillServiceTest</div></pre></td></tr></table></figure></p>
+<p>然后通过Spring依赖注入的方式，将测试类的属性注入到当前测试类下,在测试之前，先把日志的输出定义一下，导入org.slf4j包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">private final Logger logger = LoggerFactory.getLogger(this.getClass());</div><div class="line"></div><div class="line">@Autowired</div><div class="line">private SeckillService seckillService;</div></pre></td></tr></table></figure></p>
+<p>不过slf4j只是接口，要实现日志需要logback，在resources目录下新建一个logback.xml文件，然后打开<a href="http://logback.qos.ch/manual/configuration.html" target="_blank" rel="external">logback官网</a>，找到相关配置示例，复制过来<br><img src="http://upload-images.jianshu.io/upload_images/4221394-fdebea323a89a093.png" alt="logback官网"></p>
+<p>先测试两个获取Seckill数据的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void testGetSeckillList() &#123;</div><div class="line">	List&lt;Seckill&gt; list = seckillService.getSeckillList();</div><div class="line">	logger.info(&quot;list=&#123;&#125;&quot;, list);</div><div class="line">&#125;</div><div class="line"></div><div class="line">@Test</div><div class="line">public void testGetById() &#123;</div><div class="line">	long id = 1000;</div><div class="line">	Seckill seckill = seckillService.getById(id);</div><div class="line">	logger.info(&quot;seckill=&#123;&#125;&quot;, seckill);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-ba73287c8898e062.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="getSeckillList方法测试结果"><br>可以看到最下面拿到了List</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-331a01d7abc0b242.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="getById方法测试结果"></p>
+<p>接着测试exportSeckillUrl方法，用于显示秒杀接口地址或者是日期<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void testExportSeckillUrl() &#123;</div><div class="line">	long id = 1000;</div><div class="line">	Exposer exposer = seckillService.exportSeckillUrl(id);</div><div class="line">	logger.info(&quot;exposer=&#123;&#125;&quot;, exposer);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-dc9b239ed4f15264.png" alt="exportSeckillUrl方法测试结果"><br>最下面显示了MD5的值，如果返回的MD5为null，说明不在秒杀活动期内，想看到MD5的话，在控制台进入MySQL，把seckill表中的start_time/end_time改一下</p>
+<p>最后是executeSeckill方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void testExecuteSeckill() &#123;</div><div class="line">	long id = 1000;</div><div class="line">	long userPhone = 13587456321L;</div><div class="line">	String md5 = &quot;f540e8a6bf6016cea1d929ca265dfed3&quot;;</div><div class="line">	try &#123;</div><div class="line">		SeckillExecution execution = seckillService.executeSeckill(id, userPhone, md5);</div><div class="line">		logger.info(&quot;result=&#123;&#125;&quot;, execution);</div><div class="line">	&#125; catch (RepeatKillException e) &#123;</div><div class="line">		logger.error(e.getMessage());</div><div class="line">	&#125; catch (SeckillCloseException e) &#123;</div><div class="line">		logger.error(e.getMessage());</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-abd2947816d76232.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="executeSeckill方法测试结果"><br>第一条是之前测试的数据</p>
+<p>方法中的MD5的值是上个方法测试后日志输出时的数据</p>
+<p>当然，最后两个方法可以放在一个测试方法中，免得要手动复制MD5<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void testSeckillLogic() &#123;</div><div class="line">	long id = 1001;</div><div class="line">	Exposer exposer = seckillService.exportSeckillUrl(id);</div><div class="line">	if(exposer.isExposed())&#123;</div><div class="line">		logger.info(&quot;exposer=&#123;&#125;&quot;, exposer);</div><div class="line">		long userPhone = 13587456321L;</div><div class="line">		String md5 = exposer.getMd5();</div><div class="line">		try &#123;</div><div class="line">			SeckillExecution execution = seckillService.executeSeckill(id, userPhone, md5);</div><div class="line">			logger.info(&quot;result=&#123;&#125;&quot;, execution);</div><div class="line">		&#125; catch (RepeatKillException e) &#123;</div><div class="line">			logger.error(e.getMessage());</div><div class="line">		&#125; catch (SeckillCloseException e) &#123;</div><div class="line">			logger.error(e.getMessage());</div><div class="line">		&#125;</div><div class="line">	&#125; else &#123;</div><div class="line">		//秒杀未开启</div><div class="line">		logger.warn(&quot;exposer=&#123;&#125;&quot;, exposer);</div><div class="line">	&#125;</div></pre></td></tr></table></figure></p>
+<p>这里的try/catch其实是为了保证测试类的通过，因为像重复秒杀异常(RepeatKillException)、秒杀关闭异常(SeckillCloseException)都是自定义的异常，这些异常报错，也说明测试通过了，所以为了统一，把这些用于测试的异常也catch住并打印</p>
+<p>至此，Service层接口的设计与实现完成了</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/05/Java笔记之高并发秒杀API-二/" rel="next" title="Java笔记之高并发秒杀API(二)">
+                <i class="fa fa-chevron-left"></i> Java笔记之高并发秒杀API(二)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/touxiang.JPG"
+               alt="Fzero" />
+          <p class="site-author-name" itemprop="name">Fzero</p>
+          <p class="site-description motion-element" itemprop="description">在迷踪岛满级的熊猫信仰贼</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#秒杀业务接口设计"><span class="nav-number">1.</span> <span class="nav-text">秒杀业务接口设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#秒杀接口实现"><span class="nav-number">2.</span> <span class="nav-text">秒杀接口实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于Spring管理Service依赖"><span class="nav-number">3.</span> <span class="nav-text">基于Spring管理Service依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring声明式事务"><span class="nav-number">4.</span> <span class="nav-text">Spring声明式事务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五、Service层集成测试"><span class="nav-number">5.</span> <span class="nav-text">五、Service层集成测试</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fzero</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>

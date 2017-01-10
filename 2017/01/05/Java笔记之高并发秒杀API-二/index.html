@@ -124,7 +124,7 @@ DAO层单元测试">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-94c5cc0c364b0a34.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-e24806354d8995df.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-a5055bdc473371e2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
-<meta property="og:updated_time" content="2017-01-06T15:12:33.452Z">
+<meta property="og:updated_time" content="2017-01-07T03:29:01.985Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java笔记之高并发秒杀API(二)">
 <meta name="twitter:description" content="本篇将完成DAO层的设计与开发，包括：
@@ -351,7 +351,7 @@ DAO层单元测试">
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-01-05T23:05:18+08:00">
+              <time title="Дата создания записи" itemprop="dateCreated datePublished" datetime="2017-01-05T23:05:18+08:00">
                 2017-01-05
               </time>
             
@@ -552,6 +552,7 @@ DAO层单元测试">
 <p>前面已经插入过一条成功秒杀的信息，所以还是用前面的数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@Test</div><div class="line">public void testQueryByIdWithSeckill() &#123;</div><div class="line">	long id = 1000L;</div><div class="line">	long phone = 13512345678L;</div><div class="line">	SuccessKilled successKilled = successKilledDao.queryByIdWithSeckill(id, phone);</div><div class="line">	System.out.println(successKilled);</div><div class="line">	System.out.println(successKilled.getSeckillId());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <p>因为在SuccessKilled类中已经实例化了Seckill类，并生成了getter和setter方法，所以这里也可以取到Seckill对象<br><img src="http://upload-images.jianshu.io/upload_images/4221394-a5055bdc473371e2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="queryByIdWithSeckill方法输出结果"></p>
 <p>终于，所有的DAO层的工作已经完成了</p>
+<h2 id="DAO层编码后的一些思考"><a href="#DAO层编码后的一些思考" class="headerlink" title="DAO层编码后的一些思考"></a>DAO层编码后的一些思考</h2><p>回顾从最初的创建数据库开始，到设计接口、编写SQL语句、各种配置文件，中间没有写一行逻辑代码，DAO层的工作实际上演变为了<strong> 接口设计+SQL编写+配置文件 </strong>，好处就是源代码和SQL进行了分离，方便Review，而DAO拼接等逻辑在Service层完成</p>
 
       
     </div>
@@ -593,6 +594,10 @@ DAO层单元测试">
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/11/Java笔记之高并发秒杀API-三/" rel="prev" title="Java笔记之高并发秒杀API(三)">
+                Java笔记之高并发秒杀API(三) <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -662,7 +667,7 @@ DAO层单元测试">
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -708,7 +713,7 @@ DAO层单元测试">
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库设计与编码"><span class="nav-number">1.</span> <span class="nav-text">数据库设计与编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAO层相关接口编码"><span class="nav-number">2.</span> <span class="nav-text">DAO层相关接口编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于MyBatis实现DAO层接口"><span class="nav-number">3.</span> <span class="nav-text">基于MyBatis实现DAO层接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MyBatis全局配置"><span class="nav-number">3.1.</span> <span class="nav-text">MyBatis全局配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SeckillDao接口SQL语句配置"><span class="nav-number">3.2.</span> <span class="nav-text">SeckillDao接口SQL语句配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SuccessKilledDao接口SQL语句配置"><span class="nav-number">3.3.</span> <span class="nav-text">SuccessKilledDao接口SQL语句配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MyBatis与Spring整合"><span class="nav-number">4.</span> <span class="nav-text">MyBatis与Spring整合</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置数据库相关参数"><span class="nav-number">4.1.</span> <span class="nav-text">配置数据库相关参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置数据库连接池"><span class="nav-number">4.2.</span> <span class="nav-text">配置数据库连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置SqlSessionFactory对象"><span class="nav-number">4.3.</span> <span class="nav-text">配置SqlSessionFactory对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置扫描DAO接口包"><span class="nav-number">4.4.</span> <span class="nav-text">配置扫描DAO接口包</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAO层单元测试"><span class="nav-number">5.</span> <span class="nav-text">DAO层单元测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SeckillDao接口测试"><span class="nav-number">5.1.</span> <span class="nav-text">SeckillDao接口测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SuccessKilledDao接口测试"><span class="nav-number">5.2.</span> <span class="nav-text">SuccessKilledDao接口测试</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库设计与编码"><span class="nav-number">1.</span> <span class="nav-text">数据库设计与编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAO层相关接口编码"><span class="nav-number">2.</span> <span class="nav-text">DAO层相关接口编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基于MyBatis实现DAO层接口"><span class="nav-number">3.</span> <span class="nav-text">基于MyBatis实现DAO层接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MyBatis全局配置"><span class="nav-number">3.1.</span> <span class="nav-text">MyBatis全局配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SeckillDao接口SQL语句配置"><span class="nav-number">3.2.</span> <span class="nav-text">SeckillDao接口SQL语句配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SuccessKilledDao接口SQL语句配置"><span class="nav-number">3.3.</span> <span class="nav-text">SuccessKilledDao接口SQL语句配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MyBatis与Spring整合"><span class="nav-number">4.</span> <span class="nav-text">MyBatis与Spring整合</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置数据库相关参数"><span class="nav-number">4.1.</span> <span class="nav-text">配置数据库相关参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置数据库连接池"><span class="nav-number">4.2.</span> <span class="nav-text">配置数据库连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置SqlSessionFactory对象"><span class="nav-number">4.3.</span> <span class="nav-text">配置SqlSessionFactory对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置扫描DAO接口包"><span class="nav-number">4.4.</span> <span class="nav-text">配置扫描DAO接口包</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAO层单元测试"><span class="nav-number">5.</span> <span class="nav-text">DAO层单元测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SeckillDao接口测试"><span class="nav-number">5.1.</span> <span class="nav-text">SeckillDao接口测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SuccessKilledDao接口测试"><span class="nav-number">5.2.</span> <span class="nav-text">SuccessKilledDao接口测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DAO层编码后的一些思考"><span class="nav-number">6.</span> <span class="nav-text">DAO层编码后的一些思考</span></a></li></ol></div>
             
 
           </div>
