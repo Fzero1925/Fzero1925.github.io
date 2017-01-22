@@ -1,0 +1,930 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇将完成WEB层的设计与开发，包括：
+
+Spring MVC与Spring、MyBatis整合
+设计并实现Restful接口">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java笔记之高并发秒杀API(四)">
+<meta property="og:url" content="http://yoursite.com/2017/01/23/Java笔记之高并发秒杀API-四/index.html">
+<meta property="og:site_name" content="Fzero">
+<meta property="og:description" content="本篇将完成WEB层的设计与开发，包括：
+
+Spring MVC与Spring、MyBatis整合
+设计并实现Restful接口">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-0fa9c2947eb19eea.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-6f30ba0bd4979b4e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-01-22T19:25:54.479Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java笔记之高并发秒杀API(四)">
+<meta name="twitter:description" content="本篇将完成WEB层的设计与开发，包括：
+
+Spring MVC与Spring、MyBatis整合
+设计并实现Restful接口">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4221394-0fa9c2947eb19eea.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/23/Java笔记之高并发秒杀API-四/"/>
+
+
+
+
+
+  <title> Java笔记之高并发秒杀API(四) | Fzero </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-89586659-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Fzero</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/01/23/Java笔记之高并发秒杀API-四/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Fzero">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/touxiang.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Fzero">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Fzero" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java笔记之高并发秒杀API(四)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-01-23T03:21:41+08:00">
+                2017-01-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇将完成WEB层的设计与开发，包括：</p>
+<ul>
+<li>Spring MVC与Spring、MyBatis整合</li>
+<li>设计并实现Restful接口</li>
+</ul>
+<a id="more"></a>
+<h2 id="Spring-MVC与Spring整合"><a href="#Spring-MVC与Spring整合" class="headerlink" title="Spring MVC与Spring整合"></a>Spring MVC与Spring整合</h2><p>之前Spring与MyBatis已经进行过整合了，当通过DispatcherServlet加载Spring MVC的时候，DispatcherServlet同时会把Spring相关的配置也会整合到Spring MVC中，这样就实现了三个框架的整合，即MyBatis+Spring+Spring MVC</p>
+<p>打开web.xml，在Eclipse中位置是src/main/webapp/WEB-INF<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 配置DispatcherServlet --&gt;</div><div class="line">&lt;servlet&gt;</div><div class="line">	&lt;servlet-name&gt;seckill-dispatcher&lt;/servlet-name&gt;</div><div class="line">	&lt;servlet-class&gt;org.springframework.web.servlet.DispatcherServlet&lt;/servlet-class&gt;</div><div class="line">  	</div><div class="line">	&lt;!-- 配置Spring MVC需要加载的配置文件 --&gt;</div><div class="line">	&lt;init-param&gt;</div><div class="line">  		&lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;</div><div class="line">  		&lt;param-value&gt;classpath:spring/spring-*.xml&lt;/param-value&gt;</div><div class="line">	&lt;/init-param&gt;</div><div class="line">&lt;/servlet&gt;</div></pre></td></tr></table></figure></p>
+<p>首先配置的是Spring MVC中央控制器的Servlet，即DispatcherServlet，所有Spring MVC的请求都由DispatcherServlet来分发</p>
+<p>然后配置Spring MVC需要加载的配置文件，所有在spring目录下的xml配置文件都要加载进来，之前完成的配置文件有spring-dao.xml和spring-service.xml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;servlet-mapping&gt;</div><div class="line">	&lt;servlet-name&gt;seckill-dispatcher&lt;/servlet-name&gt;</div><div class="line">  	&lt;!-- 默认匹配所有请求 --&gt;</div><div class="line">  	&lt;url-pattern&gt;/&lt;/url-pattern&gt;</div><div class="line">&lt;/servlet-mapping&gt;</div></pre></td></tr></table></figure>
+<p>接着是servlet-mapping，默认匹配所有请求，也就是所有请求都会被DispatcherServlet拦截</p>
+<p>在src\main\resources\spring下新建spring-web.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;</div><div class="line">    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</div><div class="line">    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;</div><div class="line">    xmlns:mvc=&quot;http://www.springframework.org/schema/mvc&quot;</div><div class="line">    xsi:schemaLocation=&quot;</div><div class="line">    	http://www.springframework.org/schema/beans</div><div class="line">        http://www.springframework.org/schema/beans/spring-beans.xsd</div><div class="line">        http://www.springframework.org/schema/context</div><div class="line">        http://www.springframework.org/schema/context/spring-context.xsd</div><div class="line">        http://www.springframework.org/schema/mvc</div><div class="line">        http://www.springframework.org/schema/mvc/spring-mvc.xsd&quot;&gt;</div><div class="line">&lt;beans&gt;</div></pre></td></tr></table></figure></p>
+<p>把以上内容复制到spring-web.xml</p>
+<p>开始配置Spring MVC<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 开启Spring MVC注解模式 --&gt;</div><div class="line">&lt;mvc:annotation-driven/&gt;</div></pre></td></tr></table></figure></p>
+<p>开启Spring MVC注解模式，这一步是一个简化配置，提供了以下功能：</p>
+<ul>
+<li>自动注册DefaultAnnotationHandlerMapping，也就是默认地URL到Handler的映射是通过注解的方式</li>
+<li>自动注册AnnotationMethodHandlerAdapter，这个是基于注解的Handler适配器</li>
+<li>数据绑定</li>
+<li>数字和日期的format，也就是转换，例如@NumberFormat，@DataTimeFormat</li>
+<li>提供xml，json默认读写支持<br>总而言之，我们可以通过不同的注解来完成以上的功能，当然这些功能不仅可以使用注解，也可以使用额外的xml配置文件甚至是编程的方式，根据项目的不同采用不同的方式</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 静态资源默认servlet配置 --&gt;</div><div class="line">&lt;mvc:default-servlet-handler/&gt;</div></pre></td></tr></table></figure>
+<p>前面配置了servlet-mapping，映射路径为“/”，使用这样配置的话，就需要这个处理方式，有两个作用：</p>
+<ul>
+<li>加入对静态资源的处理，即js、png等</li>
+<li>允许使用”/“做整体映射</li>
+</ul>
+<p>接着配置jsp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 配置输出样式为JSP 显示ViewResolver --&gt;</div><div class="line">&lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;</div><div class="line">	&lt;property name=&quot;viewClass&quot; value=&quot;org.springframework.web.servlet.view.JstlView&quot;/&gt;</div><div class="line">	&lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot;/&gt;</div><div class="line">	&lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;/&gt;</div><div class="line">&lt;/bean&gt;</div></pre></td></tr></table></figure></p>
+<p>也就是需要默认的文档输出是jsp和json，不过json不需要我们提供，因为在开始配置Spring MVC注解模式的时候，已经提供了json的读写支持，只要对应到相应的注解就行</p>
+<p>因为可能要用到el表达式或者jstl标签，所以配置一个viewClass</p>
+<p>还要配置一个识别JSP文件前缀的属性，设置jsp文件存放在/WEB-INF/jsp目录下，再加上后缀</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 扫描WEB相关的bean --&gt;</div><div class="line">&lt;context:component-scan base-package=&quot;org.seckill.web&quot;/&gt;</div></pre></td></tr></table></figure>
+<p>扫描WEB相关的bean</p>
+<p>接着按照我粗浅的理解，简单的说一下Spring MVC的运行流程：<br><img src="http://upload-images.jianshu.io/upload_images/4221394-0fa9c2947eb19eea.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Spring MVC运行流程图"><br>1、用户发送的请求，所有的请求都会映射到DispatcherServlet，这是一个中央控制器的Servlet，这个Servlet会拦截所有的请求，对应在项目中应该就是web.xml中配置的servlet-mapping标签<br>2、DispatcherServlet默认的会使用DefaultAnnotation HandlerMapping，主要的作用就是映射URL，哪个URL对应哪个handler，对应在项目中就是在spring-web.xml中mvc:annotation-driven，即开启Spring MVC的注解模式<br>3、DispatcherServlet默认的会使用DefaultAnnotation HandlerAdapter，用于做Handler适配，对应在项目中就是在spring-web.xml中mvc:annotation-driven，即开启Spring MVC的注解模式<br>4、DefaultAnnotation HandlerAdapter最终会衔接这次开发的SeckillController，最终的产生就是ModelAndView<br>5、ModelAndView会与中央控制器DispatcherServlet进行交互<br>6、通过第五步的交互，DispatcherServlet会发现应用的是InternalResource ViewResolver，这个其实就是jsp默认的View<br>7、通过第五步的交互，DispatcherServlet也会把Model和list.jsp相结合，<br>8、最终返回给用户<br>实际开发的时候只有蓝色的部分，其他的可以使用默认的注解形式，非常方便地映射URL，去对应到相应的逻辑，同时控制输出数据和对应的页面</p>
+<h2 id="设计Restful接口"><a href="#设计Restful接口" class="headerlink" title="设计Restful接口"></a>设计Restful接口</h2><blockquote>
+<p>一种软件架构风格，设计风格而不是标准，只是提供了一组设计原则和约束条件。它主要用于客户端和服务器交互类的软件。基于这个风格设计的软件可以更简洁，更有层次，更易于实现缓存等机制。–百度百科</p>
+</blockquote>
+<p>通过这个项目，我对Restful接口的理解是：</p>
+<blockquote>
+<p>这是一种优雅的URL表达方式，通过这种URL表达式可以明显的感知到这个URL代表的是什么业务场景或者什么的数据、资源</p>
+</blockquote>
+<p>以下是本项目的URL设计：</p>
+<ul>
+<li>/seckill/list：秒杀列表，GET方式</li>
+<li>/seckill/{id}/detail：详情页，GET方式</li>
+<li>/seckill/time/now：系统时间，通过系统时间为基准，对秒杀操作进行提前的计时的操作逻辑，GET方式</li>
+<li>/seckill/{id}/exposer：暴露秒杀，通过这个URL才能拿到最后要执行秒杀操作的URL，POST方式</li>
+<li>/sekcill/{id}/{md5}/execution：执行秒杀，POST方式</li>
+</ul>
+<h2 id="使用Spring-MVC实现Restful接口"><a href="#使用Spring-MVC实现Restful接口" class="headerlink" title="使用Spring MVC实现Restful接口"></a>使用Spring MVC实现Restful接口</h2><p>在org.seckill包下新建一个web包，用于存放所有的controller，新建一个SeckillController类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">@Controller</div><div class="line">@RequestMapping(&quot;/seckill&quot;)</div><div class="line">public class SeckillController</div></pre></td></tr></table></figure></p>
+<p>标注这个类是一个Controller，使用@Controller注解，目的是将这个类放入Spring容器当中</p>
+<p>还要加上一个@RequestMapping注解，代表的是模块，由于我们使用比较规范的URL设计风格，所有的URL应该是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/模块/资源/&#123;id&#125;/更加细分</div></pre></td></tr></table></figure></p>
+<p>要获取列表页，也就是要调用Service<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">//实例化日志对象，导入org.slf4j包</div><div class="line">private final Logger logger = LoggerFactory.getLogger(this.getClass());</div><div class="line">	</div><div class="line">@Autowired</div><div class="line">private SeckillService seckillService;</div></pre></td></tr></table></figure></p>
+<p>将Service注入到当前的Controller下，SeckillService在Spring容器中只有一个，Spring容器根据类型匹配，会直接找到bean的实例，然后注入到当前的Controller下</p>
+<h3 id="秒杀列表页"><a href="#秒杀列表页" class="headerlink" title="秒杀列表页"></a>秒杀列表页</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/list&quot;, method = RequestMethod.GET)</div><div class="line">public String list(Model model)&#123;</div><div class="line">		</div><div class="line">	//获取列表页</div><div class="line">	List&lt;Seckill&gt; list = seckillService.getSeckillList();</div><div class="line">	model.addAttribute(&quot;list&quot;, list);</div><div class="line">	return &quot;list&quot;;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>参数model就是用来存放渲染list.jsp的数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/list&quot;, method = RequestMethod.GET)</div></pre></td></tr></table></figure>
+<p>这里Spring MVC的注解映射使用的是@RequestMapping注解，其中value的值是二级URL，后面的method属性限制了http请求的方式，这个方法只接收GET方式的http请求，如果是POST请求，Spring MVC将不会做映射</p>
+<p>@RequestMapping注解它支持很多种URL映射：</p>
+<ul>
+<li>支持标准的URL</li>
+<li>支持Ant风格URL，即<figure class="highlight plain"><figcaption><span>```等字符</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">  - ``` ? ```表示匹配一个字符</div><div class="line">  - ``` * ```表示匹配任意字符</div><div class="line">  - ``` ** ```表示匹配任意URL路径</div><div class="line">- 带&#123;&#125;占位符的URL</div><div class="line"></div><div class="line">举个栗子：</div></pre></td></tr></table></figure></li>
+</ul>
+<p>/user/<em>/creation可以匹配/user/aaa/creation、/user/bbb/creation等URL<br>/user/*</em>/creation可以匹配/user/creation、/user/aaa/bbb/creation等URL<br>/user/{userId}可以匹配user/213、user/abc等URL  123、abc可以以参数的方式传入<br>/company/{companyId}/user/{userId}/detail匹配/company/123/user/456/detail等URL<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">在list方法中，通过实例化的SeckillService调用其中的方法</div></pre></td></tr></table></figure></p>
+<p>/**</p>
+<ul>
+<li>查询所有秒杀商品记录</li>
+<li>@return<br>*/<br>List<seckill> getSeckillList();//这是SeckillService接口中的方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">```</div><div class="line">//获取列表页</div><div class="line">List&lt;Seckill&gt; list = seckillService.getSeckillList();</div><div class="line">model.addAttribute(&quot;list&quot;, list);</div><div class="line">return &quot;list&quot;;</div></pre></td></tr></table></figure>
+</seckill></li>
+</ul>
+<p>model就是用来存放数据的，并把返回的数据通过字符串进行标识，最后返回一个字符串，那么这里为什么返回一个字符串？这个字符串会被怎么处理？</p>
+<p>之前介绍的Spring MVC运行流程<br><img src="http://upload-images.jianshu.io/upload_images/4221394-6f30ba0bd4979b4e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Spring MVC运行流程"><br>HandlerAdapter在对Handler，即SeckillController进行处理之后会返回一个ModelAndView对象，在获得了ModelAndView对象之后，Spring就需要把该View渲染给用户，即返回给浏览器。在这个渲染的过程中，发挥作用的就是ViewResolver和View<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;bean class=&quot;org.springframework.web.servlet.view.InternalResourceViewResolver&quot;&gt;</div><div class="line">	&lt;property name=&quot;viewClass&quot; value=&quot;org.springframework.web.servlet.view.JstlView&quot;/&gt;</div><div class="line">	&lt;property name=&quot;prefix&quot; value=&quot;/WEB-INF/jsp/&quot;/&gt;</div><div class="line">	&lt;property name=&quot;suffix&quot; value=&quot;.jsp&quot;/&gt;</div><div class="line">&lt;/bean&gt;</div></pre></td></tr></table></figure></p>
+<p>在spring-web.xml文件中使用的ViewResolver是InternalResourceViewResolver</p>
+<p>InternalResourceViewResolver 会把返回的视图名称都解析为 InternalResourceView 对象， InternalResourceView 会把 Controller 处理器方法返回的模型属性都存放到对应的 request 属性中，然后通过 RequestDispatcher 在服务器端把请求 forword 重定向到目标 URL 。比如在 InternalResourceViewResolver 中定义了 prefix=/WEB-INF/ ， suffix=.jsp ，然后请求的 Controller 处理器方法返回的视图名称为 test ，那么这个时候 InternalResourceViewResolver 就会把 test 解析为一个 InternalResourceView 对象，先把返回的模型属性都存放到对应的 HttpServletRequest 属性中，然后利用 RequestDispatcher 在服务器端把请求 forword 到 /WEB-INF/test.jsp</p>
+<p>这就是 InternalResourceViewResolver 一个非常重要的特性，我们都知道存放在 /WEB-INF/ 下面的内容是不能直接通过 request 请求的方式请求到的，为了安全性考虑，我们通常会把 jsp 文件放在 WEB-INF 目录下，而 InternalResourceView 在服务器端跳转的方式可以很好的解决这个问题</p>
+<h3 id="秒杀详情页"><a href="#秒杀详情页" class="headerlink" title="秒杀详情页"></a>秒杀详情页</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/&#123;seckillId&#125;/detail&quot;, method = RequestMethod.GET)</div><div class="line">public String detail(@PathVariable(&quot;seckillId&quot;) Long seckillId, Model model)&#123;</div><div class="line">		</div><div class="line">	if(seckillId == null)&#123;</div><div class="line">		return &quot;redirect:/seckill/list&quot;;</div><div class="line">	&#125;</div><div class="line">	Seckill seckill = seckillService.getById(seckillId);</div><div class="line">	if(seckill == null)&#123;</div><div class="line">		return &quot;forward:/seckill/list&quot;;</div><div class="line">	&#125;</div><div class="line">	model.addAttribute(&quot;seckill&quot;, seckill);</div><div class="line">	return &quot;detail&quot;;</div><div class="line">		</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>之前说过，@RequestMapping注解支持多种URL映射，本项目所设计的URL就有带{}占位符的URL<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/&#123;seckillId&#125;/detail&quot;, method = RequestMethod.GET)</div><div class="line">public String detail(@PathVariable(&quot;seckillId&quot;) Long seckillId, Model model)</div></pre></td></tr></table></figure></p>
+<p>通过@PathVariable注解绑定后面的参数seckilId，然后对应到URL占位符，当用户传递对应的URL时，@RequestMapping注解中占位符{seckillId}的值会传入detail方法中对应的参数，因为不同的秒杀商品有不同的详情页，所以在二级URL上使用占位符标识不同id的秒杀商品</p>
+<p>接着对传进来的seckillId进行判断<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">if(seckillId == null)&#123;</div><div class="line">	return &quot;redirect:/seckill/list&quot;;</div><div class="line">&#125;</div><div class="line">Seckill seckill = seckillService.getById(seckillId);</div><div class="line">if(seckill == null)&#123;</div><div class="line">	return &quot;forward:/seckill/list&quot;;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>先要判断seckillId有没有传进来，如果没有传进来，就请求转发到list页面，会回到列表页；如果传进来的seckillId的值不属于任何秒杀商品，那么仍然会重定向到列表页</p>
+<p>这里简单说下请求转发与重定向：</p>
+<ul>
+<li>从地址栏显示来说：<ul>
+<li>forward：服务器请求资源，服务器直接访问目标地址的URL，把那个URL的响应内容读取过来，然后把这些内容再发给浏览器，浏览器根本不知道服务器发送的内容从哪里来的，所以它的地址栏还是原来的地址</li>
+<li>redirect：服务端根据逻辑，发送一个状态码，告诉浏览器重新去请求那个地址，所以地址栏显示的是新的URL，redirect等于客户端向服务器端发出两次request，同时也接受两次response</li>
+</ul>
+</li>
+<li>从数据共享来说<ul>
+<li>forward：转发页面和转发到的页面可以共享request里面的数据</li>
+<li>redirect：不能共享数据</li>
+</ul>
+</li>
+<li>从运用地方来说<ul>
+<li>forward：一般用于用户登陆的时候,根据角色转发到相应的模块</li>
+<li>redirect：一般用于用户注销登陆时返回主页面和跳转到其它的网站等</li>
+</ul>
+</li>
+<li>从效率来说<ul>
+<li>forward：高</li>
+<li>redirect：低</li>
+</ul>
+</li>
+</ul>
+<p>这里使用redirect和forward没有特别的用意</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">model.addAttribute(&quot;seckill&quot;, seckill);</div><div class="line">return &quot;detail&quot;;</div></pre></td></tr></table></figure>
+<p>接着就是使用model存储数据，并返回一个字符串</p>
+<h3 id="秒杀地址暴露"><a href="#秒杀地址暴露" class="headerlink" title="秒杀地址暴露"></a>秒杀地址暴露</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(</div><div class="line">		value = &quot;/&#123;seckillId&#125;/exposer&quot;, </div><div class="line">		method = RequestMethod.POST,</div><div class="line">		produces = &#123;&quot;application/json;charset=UTF-8&quot;&#125;)</div><div class="line">@ResponseBody</div><div class="line">public SeckillResult&lt;Exposer&gt; exposer(@PathVariable(&quot;seckillId&quot;) Long seckillId)&#123;</div><div class="line">		</div><div class="line">	SeckillResult&lt;Exposer&gt; result;</div><div class="line">	try &#123;</div><div class="line">		Exposer exposer = seckillService.exportSeckillUrl(seckillId);</div><div class="line">		result = new SeckillResult&lt;Exposer&gt;(true, exposer);</div><div class="line">	&#125; catch (Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">		result = new SeckillResult&lt;Exposer&gt;(false, e.getMessage());</div><div class="line">	&#125;</div><div class="line">	return result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>同样在方法上使用@RequestMapping注解设置二级URL，限制http请求方式为POST，并且通过produces返回HttpResponse的hanndler，告诉浏览器这是一个application/json,同时设置编码为UTF-8</p>
+<p>使用@ResponseBody注解，Spring MVC会把返回的数据封装成json</p>
+<p>之前说过有个DTO层，主要是用来封装Service层与WEB层之间的数据，这里在dto包下新建一个SeckillResult类，用于封装数据结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">//封装json结果</div><div class="line">public class SeckillResult&lt;T&gt; &#123;</div><div class="line">	</div><div class="line">	private boolean success;//判断请求是否成功</div><div class="line">	</div><div class="line">	private T data;//存放数据</div><div class="line">	</div><div class="line">	private String error;//错误信息</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这个类是一个泛型类型<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">public SeckillResult(boolean success, T data) &#123;</div><div class="line">	this.success = success;</div><div class="line">	this.data = data;</div><div class="line">&#125;</div><div class="line"></div><div class="line">public SeckillResult(boolean success, String error) &#123;</div><div class="line">	this.success = success;</div><div class="line">	this.error = error;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>通过success来判断请求是否成功，成功的话，返回从数据库中取得的数据，如果请求不成功，返回错误信息</p>
+<p>再生成get和set方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">SeckillResult&lt;Exposer&gt; result;</div><div class="line">    try &#123;</div><div class="line">        Exposer exposer = seckillService.exportSeckillUrl(seckillId);</div><div class="line">        result = new SeckillResult&lt;Exposer&gt;(true, exposer);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>实例化一个SeckillResult<exposer>对象，调用SeckillService的exportSeckillUrl方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line">* 秒杀开启时输出秒杀接口地址</div><div class="line">* 否则输出系统时间和秒杀时间</div><div class="line">* @param seckillId</div><div class="line">* @return</div><div class="line">*/</div><div class="line">Exposer exportSeckillUrl(long seckillId);//SeckillService接口中的方法</div></pre></td></tr></table></figure></exposer></p>
+<p>可以看到SeckillService的这个方法返回的是Exposer类型，所以实例化SeckillResult对象的时候，泛型中是Exposer类型<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">public class Exposer &#123;</div><div class="line">	</div><div class="line">	//是否开启秒杀</div><div class="line">	private boolean exposed;</div><div class="line">	</div><div class="line">	//加密措施</div><div class="line">	private String md5;</div><div class="line">	</div><div class="line">	//id</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	//系统当前时间（毫秒）</div><div class="line">	private long now;</div><div class="line">	</div><div class="line">	//秒杀开启时间</div><div class="line">	private long start;</div><div class="line">	</div><div class="line">	//秒杀结束时间</div><div class="line">	private long end;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>从之前定义好的Exposer类中的属性就可以看到，如果开启秒杀的话，页面会返回通过MD5加密过的秒杀的地址，如果没有开启秒杀，则返回系统当前时间及秒杀开启与结束时间，用于倒计时</p>
+<p>在SeckillController中，如果秒杀开启，通过调用SeckillService中的exportSeckillUrl方法返回Exposer对象，存放的是MD5及seckillId，然后初始化SeckillResult对象，参数为true，成功返回Exposer对象中的数据</p>
+<p>如果这期间出现错误，说明没有请求成功，需要把上面两步try/catch一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">catch (Exception e) &#123;</div><div class="line">	logger.error(e.getMessage(), e);</div><div class="line">	result = new SeckillResult&lt;Exposer&gt;(false, e.getMessage());</div><div class="line">&#125;</div><div class="line">return result;</div></pre></td></tr></table></figure></p>
+<p>因为没请求成功，所以需要输出错误信息，同时说明不在秒杀活动期内，同样初始化SeckillResult对象，返回Exposer类中的信息，在Exposer中定义的有系统当前时间以及秒杀开启、结束时间，所以如果没有请求成功，在页面返回的是倒计时或者是秒杀结束等字样</p>
+<h3 id="执行秒杀"><a href="#执行秒杀" class="headerlink" title="执行秒杀"></a>执行秒杀</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(</div><div class="line">		value = &quot;/&#123;seckillId&#125;/&#123;md5&#125;/execution&quot;,</div><div class="line">		method = RequestMethod.POST,</div><div class="line">		produces = &#123;&quot;application/json;charset=UTF-8&quot;&#125;)</div><div class="line">@ResponseBody</div><div class="line">public SeckillResult&lt;SeckillExecution&gt; execute(@PathVariable(&quot;seckillId&quot;) Long seckillId, </div><div class="line">												   @PathVariable(&quot;md5&quot;) String md5,</div><div class="line">												   @CookieValue(value = &quot;killPhone&quot;, required = false) Long phone)&#123;</div><div class="line">		</div><div class="line">	if(phone == null)&#123;</div><div class="line">		return new SeckillResult&lt;SeckillExecution&gt;(false, &quot;未注册&quot;);</div><div class="line">	&#125;</div><div class="line">	//SeckillResult&lt;SeckillExecution&gt; result;</div><div class="line">	try &#123;</div><div class="line">		SeckillExecution execution = seckillService.executeSeckill(seckillId, phone, md5);</div><div class="line">		return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">	&#125; catch (RepeatKillException e) &#123;</div><div class="line">		SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.REPEAT_KILL);</div><div class="line">		return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">	&#125; catch (SeckillCloseException e) &#123;</div><div class="line">		SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.END);</div><div class="line">		return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">	&#125; catch (Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">		SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);</div><div class="line">		return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>方法上的注解就不多说了，和上面一样，所有的ajax请求返回的都是统一的SeckillResult，之前在dto包中已经定义了SeckillException，用于封装秒杀执行后的结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 封装秒杀执行后的结果</div><div class="line"> * @author Fzero</div><div class="line"> *</div><div class="line"> */</div><div class="line">public class SeckillExecution &#123;</div><div class="line">	</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	//秒杀结果执行后的状态</div><div class="line">	private int state;</div><div class="line">	</div><div class="line">	//状态信息</div><div class="line">	private String stateInfo;</div><div class="line"></div><div class="line">	//秒杀成功对象</div><div class="line">	private SuccessKilled successKilled;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里就可以理解DTO作为Service与WEB层之间数据传递</p>
+<p>因为所有的秒杀都要有用户的标识，本项目没有做登录模块，所以使用手机号phone作为用户的标识，可以看到@RequestMapping注解中的请求参数中没有phone，这个参数是由用户浏览器的Request请求的cookie中获取到的，这里Spring MVC处理cookie有个小问题，如果不设置required属性为false的时候，当请求的header中没有一个cookie叫killPhone的时候，Spring MVC会报错，所以在@CookieValue注解中将required设置为false</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">if(phone == null)&#123;</div><div class="line">    return new SeckillResult&lt;SeckillExecution&gt;(false, &quot;未注册&quot;);</div><div class="line">&#125;</div><div class="line">try &#123;</div><div class="line">    SeckillExecution execution = seckillService.executeSeckill(seckillId, phone, md5);</div><div class="line">    return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这里先使用if简单的判断一下，实际项目中，要验证的参数很多，可以采用Spring MVC的验证信息，所以这里的killPhone不是必须的，验证用户的逻辑放在代码中</p>
+<p>对于执行秒杀操作，可能会出现各种异常和错误，所以这里需要try/catch以下，并且有些特定的异常比如重复秒杀、秒杀结束等，之前单独建立了一个exception包，专门存放与业务相关的异常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line">* 执行秒杀操作</div><div class="line">* @param seckillId</div><div class="line">* @param userPhone</div><div class="line">* @param md5</div><div class="line">* @return</div><div class="line">*/</div><div class="line">SeckillExecution executeSeckill(long seckillId, long userPhone, String md5)</div><div class="line">		throws SeckillException,RepeatKillException,SeckillCloseException;</div></pre></td></tr></table></figure></p>
+<p>这是SeckillService中定义的方法，可以看到抛出了不同的异常，所以对于这些特定的异常，要单独的catch<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">catch (RepeatKillException e) &#123;</div><div class="line">	  SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.REPEAT_KILL);</div><div class="line">	  return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这个是处理重复秒杀的异常，重新初始化SeckillExecution对象，向数据字典传入对象异常的标识，结果是返回初始化的SeckillResult，上面说过SeckillExecution对象是用于封装秒杀执行后的结果，这里的参数为true，因为当初在SeckillResult定义布尔类型的success的时候就说明这是判断请求是否成功，这里的重复秒杀显然是请求成功，所以参数为true</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">catch (SeckillCloseException e) &#123;</div><div class="line">	  SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.END);</div><div class="line">	  return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>秒杀关闭异常</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">catch (Exception e) &#123;</div><div class="line">	  logger.error(e.getMessage(), e);</div><div class="line">	  SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);</div><div class="line">	  return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果不是上述特定的两个异常，其他的异常都视为inner_error</p>
+<p>最后一个方法就是获取系统时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/time/now&quot;, method = RequestMethod.GET)</div><div class="line">@ResponseBody</div><div class="line">public SeckillResult&lt;Long&gt; time()&#123;</div><div class="line">	Date now = new Date();</div><div class="line">	return new SeckillResult&lt;Long&gt;(true, now.getTime());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>至此，WEB层完成了</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/11/Java笔记之高并发秒杀API-三/" rel="next" title="Java笔记之高并发秒杀API(三)">
+                <i class="fa fa-chevron-left"></i> Java笔记之高并发秒杀API(三)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/touxiang.JPG"
+               alt="Fzero" />
+          <p class="site-author-name" itemprop="name">Fzero</p>
+          <p class="site-description motion-element" itemprop="description">在迷踪岛满级的熊猫信仰贼</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Spring-MVC与Spring整合"><span class="nav-number">1.</span> <span class="nav-text">Spring MVC与Spring整合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设计Restful接口"><span class="nav-number">2.</span> <span class="nav-text">设计Restful接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Spring-MVC实现Restful接口"><span class="nav-number">3.</span> <span class="nav-text">使用Spring MVC实现Restful接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#秒杀列表页"><span class="nav-number">3.1.</span> <span class="nav-text">秒杀列表页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#秒杀详情页"><span class="nav-number">3.2.</span> <span class="nav-text">秒杀详情页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#秒杀地址暴露"><span class="nav-number">3.3.</span> <span class="nav-text">秒杀地址暴露</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行秒杀"><span class="nav-number">3.4.</span> <span class="nav-text">执行秒杀</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fzero</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
