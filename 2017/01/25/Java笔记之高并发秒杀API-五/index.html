@@ -1,0 +1,987 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇将完成前端页面的设计与开发，包括：
+
+使用Bootstrap开发页面结构
+交互逻辑编程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java笔记之高并发秒杀API(五)">
+<meta property="og:url" content="http://yoursite.com/2017/01/25/Java笔记之高并发秒杀API-五/index.html">
+<meta property="og:site_name" content="Fzero">
+<meta property="og:description" content="本篇将完成前端页面的设计与开发，包括：
+
+使用Bootstrap开发页面结构
+交互逻辑编程">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-706d5b373779114c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-6c4ae05def0aeb52.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-39c42f347d1f3943.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-e25fe650040e5078.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-e9168392320bdc77.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-adca21bdacdca01a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-03962929cfee8234.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-fc7d6595f917a49d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-06a74e617b3e014b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-e25fe650040e5078.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-e9168392320bdc77.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-01-24T17:17:56.440Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java笔记之高并发秒杀API(五)">
+<meta name="twitter:description" content="本篇将完成前端页面的设计与开发，包括：
+
+使用Bootstrap开发页面结构
+交互逻辑编程">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4221394-706d5b373779114c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/25/Java笔记之高并发秒杀API-五/"/>
+
+
+
+
+
+  <title> Java笔记之高并发秒杀API(五) | Fzero </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-89586659-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Fzero</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/01/25/Java笔记之高并发秒杀API-五/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Fzero">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/touxiang.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Fzero">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Fzero" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java笔记之高并发秒杀API(五)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-01-25T01:15:07+08:00">
+                2017-01-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇将完成前端页面的设计与开发，包括：</p>
+<ul>
+<li>使用Bootstrap开发页面结构</li>
+<li>交互逻辑编程</li>
+</ul>
+<a id="more"></a>
+<h2 id="使用Bootstrap开发页面结构"><a href="#使用Bootstrap开发页面结构" class="headerlink" title="使用Bootstrap开发页面结构"></a>使用Bootstrap开发页面结构</h2><p>在设计SeckillController中我们已经设置了jsp文件的路径，在/WEB-INF/新建一个jsp目录，在该目录下新建list.jsp和detail.jsp</p>
+<p>使用<a href="http://www.runoob.com/bootstrap/bootstrap-environment-setup.html" target="_blank" rel="external">Bootstrap的模板</a>，这个模板基本上是固定的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot; %&gt;</div><div class="line">&lt;!DOCTYPE html&gt;</div><div class="line">&lt;html&gt;</div><div class="line">   &lt;head&gt;</div><div class="line">      &lt;title&gt;Bootstrap 模板&lt;/title&gt;</div><div class="line">      &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</div><div class="line">      &lt;!-- 引入 Bootstrap --&gt;</div><div class="line">      &lt;link href=&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css&quot; rel=&quot;stylesheet&quot;&gt;</div><div class="line"> </div><div class="line">      &lt;!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 --&gt;</div><div class="line">      &lt;!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 --&gt;</div><div class="line">      &lt;!--[if lt IE 9]&gt;</div><div class="line">         &lt;script src=&quot;https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js&quot;&gt;&lt;/script&gt;</div><div class="line">         &lt;script src=&quot;https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">      &lt;![endif]--&gt;</div><div class="line">   &lt;/head&gt;</div><div class="line">   &lt;body&gt;</div><div class="line">      &lt;h1&gt;Hello, world!&lt;/h1&gt;</div><div class="line"> </div><div class="line">      &lt;!-- jQuery (Bootstrap 的 JavaScript 插件需要引入 jQuery) --&gt;</div><div class="line">      &lt;script src=&quot;https://code.jquery.com/jquery.js&quot;&gt;&lt;/script&gt;</div><div class="line">      &lt;!-- 包括所有已编译的插件 --&gt;</div><div class="line">      &lt;script src=&quot;js/bootstrap.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">   &lt;/body&gt;</div><div class="line">&lt;/html&gt;</div></pre></td></tr></table></figure></p>
+<h3 id="list-jsp"><a href="#list-jsp" class="headerlink" title="list.jsp"></a>list.jsp</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">&lt;%@ page language=&quot;java&quot; contentType=&quot;text/html; charset=UTF-8&quot; %&gt;</div><div class="line">&lt;!-- 引入jstl --&gt;</div><div class="line">&lt;%@ include file=&quot;common/tag.jsp&quot; %&gt;</div><div class="line">&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;</div><div class="line">&lt;html&gt;</div><div class="line">   &lt;head&gt;</div><div class="line">      &lt;title&gt;秒杀列表页&lt;/title&gt;</div><div class="line">      &lt;%@ include file=&quot;common/head.jsp&quot; %&gt;</div><div class="line">   &lt;/head&gt;</div><div class="line">   &lt;body&gt;</div><div class="line">   &lt;/body&gt;</div><div class="line">   </div><div class="line">&lt;!-- jQuery文件。务必在bootstrap.min.js 之前引入 --&gt;</div><div class="line">&lt;script src=&quot;http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">	 </div><div class="line">&lt;!-- 最新的 Bootstrap 核心 JavaScript 文件 --&gt;</div><div class="line">&lt;script src=&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">&lt;/html&gt;</div></pre></td></tr></table></figure>
+<p>在最上面的jsp内置对象page中的contentType修改为UTF-8，这个模板已经引入了一些文件包含了 jquery.js、bootstrap.min.js 和 bootstrap.min.css 文件，用于让一个常规的 HTML 文件变为使用了Bootstrap的模板</p>
+<p>最下面有两个script标签，通过CDN加载一些Bootstrap资源，<strong> JavaScript有一个先后引入规则，jQuery作为Bootstrap的底层依赖，要先于Bootstrap声明 </strong>，这两个script标签在上面介绍的<a href="http://www.runoob.com/bootstrap/bootstrap-environment-setup.html" target="_blank" rel="external">网站</a>上都有</p>
+<p>这里有些通用的标签以及要引入的文件都单独提取出来，不用把这些相同的代码都写在每一个页面中</p>
+<p>在jsp目录下新建一个common目录，专门存放通用的jsp文件</p>
+<p>新建一个tag.jsp，用于引入jstl，如果以后还要引入别的标签，再添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;%@ taglib prefix=&quot;c&quot; uri=&quot;http://java.sun.com/jsp/jstl/core&quot;%&gt;</div><div class="line">&lt;%@ taglib prefix=&quot;fmt&quot; uri=&quot;http://java.sun.com/jsp/jstl/fmt&quot;%&gt;</div></pre></td></tr></table></figure></p>
+<p>新建一个head.jsp，head标签中的内容所有页面基本都一样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;</div><div class="line">&lt;!-- 引入 Bootstrap --&gt;</div><div class="line">&lt;link href=&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css&quot; rel=&quot;stylesheet&quot;&gt;</div><div class="line"> </div><div class="line">&lt;!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 --&gt;</div><div class="line">&lt;!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 --&gt;</div><div class="line">&lt;!--[if lt IE 9]&gt;</div><div class="line">    &lt;script src=&quot;https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js&quot;&gt;&lt;/script&gt;</div><div class="line">    &lt;script src=&quot;https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">&lt;![endif]--&gt;</div></pre></td></tr></table></figure></p>
+<p>然后使用jsp的内置对象include，静态引入head.jsp，<strong> 静态包含 是会把引入的文件合并过来 </strong>，也就是head.jsp中的内容会放到外层list.jsp中作为一个Servlet输出，如果是<strong> 动态包含 </strong>的话，那么head.jsp会作为一个<strong> 独立的jsp，先转换为Servlet </strong>，转换后的结果再和list.jsp合并</p>
+<p>接着开始编写lsit.jsp的细节部分<br><img src="http://upload-images.jianshu.io/upload_images/4221394-706d5b373779114c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="list.jsp"><br><a href="http://www.runoob.com/bootstrap/bootstrap-panels.html" target="_blank" rel="external">panel-default</a>、<a href="http://www.runoob.com/bootstrap/bootstrap-typography.html" target="_blank" rel="external">text-center</a>都是使用Bootstrap提供的样式</p>
+<p>在panel-body中使用表格，通过jstl提供的方法来显示要展示的秒杀商品<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;thead&gt;</div><div class="line">	&lt;tr&gt;</div><div class="line">	 	&lt;th&gt;名称&lt;/th&gt;</div><div class="line">	 	&lt;th&gt;库存&lt;/th&gt;</div><div class="line">	 	&lt;th&gt;开始时间&lt;/th&gt;</div><div class="line">	 	&lt;th&gt;结束时间&lt;/th&gt;</div><div class="line">	 	&lt;th&gt;创建时间&lt;/th&gt;</div><div class="line">		&lt;th&gt;详情页&lt;/th&gt;</div><div class="line">	&lt;/tr&gt;</div><div class="line">&lt;/thead&gt;</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">&lt;tbody&gt;</div><div class="line">	&lt;c:forEach var=&quot;sk&quot; items=&quot;$&#123;list&#125;&quot;&gt;</div><div class="line">	 &lt;tr&gt;</div><div class="line">	 	&lt;td&gt;$&#123;sk.name&#125;&lt;/td&gt;</div><div class="line">	 	&lt;td&gt;$&#123;sk.number&#125;&lt;/td&gt;</div><div class="line">	 	&lt;td&gt;</div><div class="line">			&lt;fmt:formatDate value=&quot;$&#123;sk.startTime&#125;&quot; pattern=&quot;yyyy-MM-dd HH:mm:ss&quot;/&gt;				</div><div class="line">		&lt;/td&gt;</div><div class="line">	 	&lt;td&gt;</div><div class="line">		    &lt;fmt:formatDate value=&quot;$&#123;sk.endTime&#125;&quot; pattern=&quot;yyyy-MM-dd HH:mm:ss&quot;/&gt;				</div><div class="line">		&lt;/td&gt;</div><div class="line">	 	&lt;td&gt;</div><div class="line">		    &lt;fmt:formatDate value=&quot;$&#123;sk.createTime&#125;&quot; pattern=&quot;yyyy-MM-dd HH:mm:ss&quot;/&gt;				</div><div class="line">		&lt;/td&gt;</div><div class="line">	 	&lt;td&gt;</div><div class="line">			&lt;a class=&quot;btn btn-info&quot; href=&quot;/seckill/$&#123;sk.seckillId&#125;/detail&quot; target=&quot;_blank&quot;&gt;link&lt;/a&gt;				</div><div class="line">		&lt;/td&gt;</div><div class="line">	 &lt;/tr&gt;</div><div class="line">	&lt;/c:forEach&gt;</div><div class="line">&lt;/tbody&gt;</div></pre></td></tr></table></figure>
+<p>首先使用jstl的c:forEach标签，用来迭代从SeckillController中的list方法传过来的”list”，这个list是存放秒杀的商品，属性var代表当前项目的变量名，items表示进行循环的项目</p>
+<p>一个tr标签是一行，每个td标签是一列，数据库有多少个秒杀商品这个表格就有多少行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/list&quot;, method = RequestMethod.GET)</div><div class="line">public String list(Model model)&#123;</div><div class="line">		</div><div class="line">	//获取列表页</div><div class="line">	List&lt;Seckill&gt; list = seckillService.getSeckillList();</div><div class="line">	model.addAttribute(&quot;list&quot;, list);</div><div class="line">	return &quot;list&quot;;</div><div class="line">		</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>从SeckillController的list方法返回的是字符串，但是之前说过，Spring MVC会拼接成一个URL地址，返回的数据是个泛型，类型是Seckill<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">public class Seckill &#123;</div><div class="line">	</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	private String name;</div><div class="line">	</div><div class="line">	private int number;</div><div class="line">	</div><div class="line">	private Date startTime;</div><div class="line">	</div><div class="line">	private Date endTime;</div><div class="line">	</div><div class="line">	private Date createTime;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这是Seckill定义的属性，所以在list.jsp页面中通过sk.name来调用相关的参数</p>
+<p>日期类型的输出默认是直接调用日期类型的toString，这不符合我们的规范，所以使用jstl的fmt:formatDate标签来格式化输出的时间</p>
+<p>最后一列给一个超链接，用于链接这个秒杀商品的详情页，可以把这个超链接做成一个按钮，使用的也是Bootstrap的CSS</p>
+<h3 id="detail-jsp"><a href="#detail-jsp" class="headerlink" title="detail.jsp"></a>detail.jsp</h3><p><img src="http://upload-images.jianshu.io/upload_images/4221394-6c4ae05def0aeb52.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="detail.jsp"></p>
+<p>这是detail.jsp的一个大的框架，先是由两个div组成，一个用于显示日期或者文本的一个显示面板，在显示面板中做一个埋点，因为这个面板在之后的交互逻辑编码中，在不同时间显示的是不同的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;h1&gt;$&#123;seckill.name &#125;&lt;/h1&gt;</div></pre></td></tr></table></figure></p>
+<p>这里可以直接这样写的原因是：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">model.addAttribute(&quot;seckill&quot;, seckill);//SeckillController中的detail方法</div></pre></td></tr></table></figure></p>
+<p>另一个div就是登录弹出层，在进入详情页的时候，会通过Cookie判断用户时候登录，没有登录的用户的页面会显示这个登录弹出层，提示用户登录</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-39c42f347d1f3943.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="detail.jsp中的登录弹出层"></p>
+<p>首先在最外围的div中进行埋点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;div id=&quot;killPhoneModal&quot; class=&quot;modal fade&quot;&gt;</div></pre></td></tr></table></figure></p>
+<p>因为这个登录弹出层不是每次用户到详情页都要出现，只有验证Cookie中没有用户登录信息才会出现，所以在这里埋点，如果Cookie中有用户的信息，在交互逻辑中我们会控制这个div不出现</p>
+<p>登录弹出层实际是一个模态框，在页面显示的时候主要由三个部分：</p>
+<ul>
+<li>modal-header：显示一些文本</li>
+<li>modal-body：用户输入登录信息</li>
+<li>modal-footer：登录按钮</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;modal-header&quot;&gt;</div><div class="line">	&lt;h3 class=&quot;modal-title text-center&quot;&gt;</div><div class="line">		&lt;span class=&quot;glyphicon glyphicon-phone&quot;&gt;&lt;/span&gt;秒杀电话：</div><div class="line">	&lt;/h3&gt;				</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure>
+<p>在modal-header中有个span面板用于显示一些文本和图标</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;modal-body&quot;&gt;</div><div class="line">	&lt;div class=&quot;row&quot;&gt;</div><div class="line">		&lt;div class=&quot;col-xs-8 col-xs-offset-2&quot;&gt;</div><div class="line">			&lt;input type=&quot;text&quot; name=&quot;killPhone&quot; id=&quot;killPhoneKey&quot; </div><div class="line">							placeholder=&quot;填写手机号^o^&quot; class=&quot;form-control&quot;&gt;</div><div class="line">		&lt;/div&gt;</div><div class="line">	&lt;/div&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure>
+<p>在modal-body中有一个输入框，这里需要在输入框中进行埋点，之后的交互逻辑要通过这个埋点来获取用户输入的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;modal-footer&quot;&gt;</div><div class="line">	&lt;!-- 验证信息 --&gt;</div><div class="line">	&lt;span id=&quot;killPhoneMessage&quot; class=&quot;glyphicon&quot;&gt;&lt;/span&gt;</div><div class="line">	&lt;button type=&quot;button&quot; id=&quot;killPhoneBtn&quot; class=&quot;btn btn-success&quot;&gt;</div><div class="line">		&lt;span class=&quot;glyphicon glyphicon-phone&quot;&gt;&lt;/span&gt;</div><div class="line">	&lt;/button&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure>
+<p>在modal-footer中由两部分组成：</p>
+<ul>
+<li>span：显示错误信息</li>
+<li>button：登录按钮</li>
+</ul>
+<p>在button中也需要埋点，用于绑定点击事件</p>
+<p>body标签中的内容完成了，下面也要通过CDN引入一些文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&lt;!-- jQuery文件。务必在bootstrap.min.js 之前引入 --&gt;</div><div class="line">&lt;script src=&quot;http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js&quot;&gt;&lt;/script&gt;</div><div class="line">	 </div><div class="line">&lt;!-- 最新的 Bootstrap 核心 JavaScript 文件 --&gt;</div><div class="line">&lt;script src=&quot;http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js&quot;&gt;&lt;/script&gt;</div><div class="line"></div><div class="line">&lt;!-- 使用CDN获取公共js  --&gt;</div><div class="line">&lt;!-- jQuery cookie操作插件 --&gt;</div><div class="line">&lt;script src=&quot;http://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js&quot;&gt;&lt;/script&gt;</div><div class="line">&lt;!-- jQuery countDown倒计时插件 --&gt;</div><div class="line">&lt;script src=&quot;http://cdn.bootcss.com/jquery-countdown/2.0.2/jquery.countdown-ar.js&quot;&gt;&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p>jquery文件和bootstrap.min.js之前在list.jsp也引入了</p>
+<p>对Cookie的操作使用jQuery Cookie插件，倒计时使用jQuery的countDown插件</p>
+<h2 id="交互逻辑"><a href="#交互逻辑" class="headerlink" title="交互逻辑"></a>交互逻辑</h2><h3 id="交互流程"><a href="#交互流程" class="headerlink" title="交互流程"></a>交互流程</h3><p><img src="http://upload-images.jianshu.io/upload_images/4221394-e25fe650040e5078.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="前端页面交互流程"></p>
+<p>当用户点击某一个秒杀商品的按钮的时候，会进入到相应的详情页，这个详情页会判断用户是否登录过，如果登录过就展示详情页页面，如果没有登录过，就弹出登录弹出层，在用户正确填写登录信息后就可以进入详情页</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-e9168392320bdc77.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="详情页流程"></p>
+<ul>
+<li><p>获取标准系统时间，因为用户可能处在不同的时区，用户终端的时间也不可能完全一致，所以要统一地采用一个标准时间，也就是服务器时间</p>
+</li>
+<li><p>通过秒杀商品的开始时间和结束时间来做出不同的判断：</p>
+<ul>
+<li>系统时间大于结束时间：秒杀活动已结束，在detail.jsp的显示面板显示“秒杀结束”字样</li>
+<li>系统时间小于开始时间：秒杀活动未开始，在detail.jsp的显示面板显示倒计时，使用的是jQuery的countDown插件，倒计时完成后，会出现秒杀按钮，用户可以执行秒杀操作</li>
+<li>系统时间介于开始时间和结束时间之间：秒杀活动正在进行，直接出现秒杀按钮，用户可以执行秒杀操作</li>
+</ul>
+</li>
+</ul>
+<h3 id="页面展示"><a href="#页面展示" class="headerlink" title="页面展示"></a>页面展示</h3><p><img src="http://upload-images.jianshu.io/upload_images/4221394-adca21bdacdca01a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="列表页"></p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-03962929cfee8234.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="登录弹出层"></p>
+<h3 id="交互逻辑编程"><a href="#交互逻辑编程" class="headerlink" title="交互逻辑编程"></a>交互逻辑编程</h3><p>在src/main/webapp目录下新建一个resources文件夹，再在其中新建一个script文件夹，用于存放脚本文件</p>
+<p>创建一个seckill.js<br><img src="http://upload-images.jianshu.io/upload_images/4221394-fc7d6595f917a49d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="seckill.js"></p>
+<p>这是最后完成的总览，接着一步步来，整个seckil这样写的原因是模拟高级语言分包的概念，使JavaScript模块化，这样当调用一个方法可以用seckill.detail.init(params)的形式</p>
+<p>在详情页初始化中，首先要做的就是获取killPhone节点，这个killPhone节点不是程序中具体的标签，而是Cookie中的用于标识用户信息的数据，用户的信息都放在Cookie中名为killPhone的节点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">//在cookie中查找手机号</div><div class="line">var killPhone = $.cookie(&apos;killPhone&apos;);</div><div class="line">//验证手机号</div><div class="line">if(!seckill.validatePhone(killPhone))&#123;</div><div class="line">	var killPhoneModal = $(&apos;#killPhoneModal&apos;);</div><div class="line">	killPhoneModal.modal(&#123;</div><div class="line">		show : true,//显示登录弹出层</div><div class="line">		backdrop : &apos;static&apos;,//禁止位置关闭</div><div class="line">		keyboard : false//关闭键盘事件</div><div class="line">	&#125;);</div><div class="line">	$(&apos;#killPhoneBtn&apos;).click(function()&#123;</div><div class="line">		var inputPhone = $(&apos;#killPhoneKey&apos;).val();</div><div class="line">		if(seckill.validatePhone(inputPhone))&#123;</div><div class="line">			$.cookie(&apos;killPhone&apos;, inputPhone, &#123;expires:7, path:&apos;/seckill&apos;&#125;);//手机号写入cookie</div><div class="line">			window.location.reload();//刷新页面</div><div class="line">		&#125;else&#123;</div><div class="line">			$(&apos;#killPhoneMessage&apos;).hide().html(&apos;&lt;label class=&quot;label label-danger&quot;&gt;手机号错误!&lt;/label&gt;&apos;).show(300);</div><div class="line">		&#125;</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>从Cookie的killPhone中获取数据后，就要验证手机号，验证手机号的逻辑建议提取到更上层，因为可能多个地方都要用到</p>
+<p>创建一个函数，名字为validatePhone，这个函数的位置在这一节最开始的图片上可以看到<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">//验证手机号</div><div class="line">validatePhone : function(phone)&#123;</div><div class="line">	if(phone &amp;&amp; phone.length == 11 &amp;&amp; !isNaN(phone))&#123;</div><div class="line">		return true;</div><div class="line">	&#125;else&#123;</div><div class="line">		return false;</div><div class="line">	&#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<p>要验证手机号，所以传入一个手机号的参数，这里使用if语句简单的判断一下</p>
+<p>首先要判断手机号是否为空，在js中直接传入参数，它会判断这个参数是否为空，空的话就是undefine，就认为是false</p>
+<p>手机号长度必须为11位</p>
+<p>isNaN是判断这个参数是否是非数字，如果是非数字的话就是true，所以这里要取反</p>
+<p>接着就可以在init方法中调用validatePhone函数来验证手机号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">if(!seckill.validatePhone(killPhone))&#123;</div><div class="line">    var killPhoneModal = $(&apos;#killPhoneModal&apos;);</div><div class="line">    killPhoneModal.modal(&#123;</div><div class="line">        show : true,//显示登录弹出层</div><div class="line">        backdrop : &apos;static&apos;,//禁止位置关闭</div><div class="line">        keyboard : false//关闭键盘事件</div><div class="line">    &#125;);</div></pre></td></tr></table></figure></p>
+<p>如果手机号存在，就可以直接跳转到详情页了，所以这里处理手机号不存在的情况，因为这个if语句中东西比较多，所以分开来说，完整的代码在前面已经展示过了</p>
+<p>手机号不存在，就需要用户进行绑定，之前在detail.jsp中也提前做好了一个登录弹出层，并进行了埋点</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-06a74e617b3e014b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="登录弹出层"></p>
+<p>id为killPhoneModal，在seckill.js中使用jQuery的选择器可以取到这个节点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var killPhoneModal = $(&apos;#killPhoneModal&apos;);</div></pre></td></tr></table></figure></p>
+<p>这个登录弹出层已经不是单纯的div了，因为使用了Bootstrap的modal，它本身有一个modal的方法，向这个方法传入json，  用于设置这个模态框的一些属性</p>
+<p>之前在detail.jsp中这个modal的属性为fade，是隐藏的，既然要让用户绑定手机号，所以要把这个弹出层显示出来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">killPhoneModal.modal(&#123;</div><div class="line">    show : true,//显示登录弹出层</div><div class="line">    backdrop : &apos;static&apos;,//禁止位置关闭</div><div class="line">    keyboard : false//关闭键盘事件</div></pre></td></tr></table></figure></p>
+<p>我们希望在用户没有正确的填写手机号之前，是不能关掉这个弹出层，所以把backdrop关掉，因为用户点击其他区域可能把这个弹出层关掉；通过键盘的ESC也可能关闭弹出层，所以要禁止键盘事件</p>
+<p>弹出层显示出来后，要给按钮做事件绑定<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$(&apos;#killPhoneBtn&apos;).click(function()&#123;</div><div class="line">	var inputPhone = $(&apos;#killPhoneKey&apos;).val();</div><div class="line">	if(seckill.validatePhone(inputPhone))&#123;</div><div class="line">		$.cookie(&apos;killPhone&apos;, inputPhone, &#123;expires:7, path:&apos;/seckill&apos;&#125;);//手机号写入cookie</div><div class="line">		window.location.reload();//刷新页面</div><div class="line">	&#125;else&#123;</div><div class="line">		$(&apos;#killPhoneMessage&apos;).hide().html(&apos;&lt;label class=&quot;label label-danger&quot;&gt;手机号错误!&lt;/label&gt;&apos;).show(300);</div><div class="line">	&#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>按钮事件绑定完成后整个验证手机号的if语句才完成了</p>
+<p>对按钮做绑定，首先就是要获取到按钮在详情页的节点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;modal-footer&quot;&gt;</div><div class="line">	&lt;!-- 验证信息 --&gt;</div><div class="line">	&lt;span id=&quot;killPhoneMessage&quot; class=&quot;glyphicon&quot;&gt;&lt;/span&gt;</div><div class="line">	&lt;button type=&quot;button&quot; id=&quot;killPhoneBtn&quot; class=&quot;btn btn-success&quot;&gt;</div><div class="line">		&lt;span class=&quot;glyphicon glyphicon-phone&quot;&gt;&lt;/span&gt;</div><div class="line">	&lt;/button&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure></p>
+<p>可以看到，按钮的节点为killPhoneBtn</p>
+<p>当用户点击了按钮，我们认为用户已经填写了在登录弹出层的input<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;modal-body&quot;&gt;</div><div class="line">	&lt;div class=&quot;row&quot;&gt;</div><div class="line">		&lt;div class=&quot;col-xs-8 col-xs-offset-2&quot;&gt;</div><div class="line">			&lt;input type=&quot;text&quot; name=&quot;killPhone&quot; id=&quot;killPhoneKey&quot; </div><div class="line">				placeholder=&quot;填写手机号^o^&quot; class=&quot;form-control&quot;&gt;</div><div class="line">		&lt;/div&gt;</div><div class="line">	&lt;/div&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure></p>
+<p>在input中，之前已经提前进行了埋点，id为killPhoneKey</p>
+<p>在seckill.js中获取到这个节点，同时使用val()方法获取到用户输入的内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var inputPhone = $(&apos;#killPhoneKey&apos;).val();</div></pre></td></tr></table></figure></p>
+<p>拿到用户输入的内容，还要再进行验证，再调用用于验证手机号的函数validatePhone<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">if(seckill.validatePhone(inputPhone))&#123;</div><div class="line">     $.cookie(&apos;killPhone&apos;, inputPhone, &#123;expires:7, path:&apos;/seckill&apos;&#125;);//手机号写入cookie</div><div class="line">     window.location.reload();//刷新页面</div><div class="line">&#125;else&#123;</div><div class="line">     $(&apos;#killPhoneMessage&apos;).hide().html(&apos;&lt;label class=&quot;label label-danger&quot;&gt;手机号错误!&lt;/label&gt;&apos;).show(300);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果验证通过了，先将inputPhone的值也就是用户输入的手机号写入Cookie中</p>
+<ul>
+<li>expires：Cookie的有效期，单位是“天”</li>
+<li>path：给出有效路径，Cookie只在该路径下有效</li>
+</ul>
+<blockquote>
+<p>为什么path不写全路径？<br>因为当一些URL没有用到这个Cookie的时候，如果把Cookie中的path设置为全路径，那么这个Cookie中的数据也会传递到后端，对后端处理会有一些影响，所以这只这个killPhone只在seckill模块下有效</p>
+</blockquote>
+<p>然后就是刷新页面，会重新调用detail属性的init方法</p>
+<p>如果验证没有通过，在detail.jsp中登录弹出层的modal-footer提前预留了一个span，用于显示错误信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;span id=&quot;killPhoneMessage&quot; class=&quot;glyphicon&quot;&gt;&lt;/span&gt;</div></pre></td></tr></table></figure></p>
+<p>同样，在seckill.js中获取到这个span节点<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$(&apos;#killPhoneMessage&apos;).hide().html(&apos;&lt;label class=&quot;label label-danger&quot;&gt;手机号错误!&lt;/label&gt;&apos;).show(300);</div></pre></td></tr></table></figure></p>
+<p>对html标签进行操作的时候，通常是先隐藏一下，避免用户看到中间过程，然后插入一些内容，显示的时候给一个时间，单位毫秒，这样看起来有动态的效果</p>
+<p>插入的是label标签，使用Bootstrap的CSS，这里显示的文本没有经过处理，直接是写死了，实际的工作中这里应该是要配合前端的数据字典，根据不同的情况显示不同的文本</p>
+<p>至此，详情页初始化部分完成，也就是开头的if语句</p>
+<p>整个前端的流程基本完成<br><img src="http://upload-images.jianshu.io/upload_images/4221394-e25fe650040e5078.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="前端页面交互流程"></p>
+<p>接着是详情页的流程<br><img src="http://upload-images.jianshu.io/upload_images/4221394-e9168392320bdc77.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="详情页流程"></p>
+<p>首先就是要获取标准系统时间</p>
+<p>所以在detail.jsp的最下面添加一些内容，首先是要引入seckill.js<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 开始编写交互逻辑 --&gt;</div><div class="line">&lt;script src=&quot;/resources/script/seckill.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p>然后使用EL表达式传入参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&lt;script type=&quot;text/javascript&quot;&gt;</div><div class="line">	$(function()&#123;</div><div class="line">		//使用EL表达式传入参数</div><div class="line">		seckill.detail.init(&#123;</div><div class="line">			seckillId : &quot;$&#123;seckill.seckillId&#125;&quot;,</div><div class="line">			startTime : &quot;$&#123;seckill.startTime.time&#125;&quot;,</div><div class="line">			endTime : &quot;$&#123;seckill.endTime.time&#125;&quot;</div><div class="line">		&#125;);</div><div class="line">		</div><div class="line">	&#125;);</div><div class="line">&lt;/script&gt;</div></pre></td></tr></table></figure></p>
+<p>接着在seckill.js中获取到这些参数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">//已经登录</div><div class="line">//计时交互逻辑</div><div class="line">var startTime = params[&apos;startTime&apos;];</div><div class="line">var endTime = params[&apos;endTime&apos;];</div><div class="line">var seckillId = params[&apos;seckillId&apos;];</div><div class="line">$.get(seckill.URL.now, &#123;&#125;, function(result)&#123;</div><div class="line">	if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">		var nowTime = result[&apos;data&apos;];</div><div class="line">		//时间判断，计时交互</div><div class="line">		seckill.countdown(seckillId, nowTime, startTime, endTime);</div><div class="line">	&#125;else&#123;</div><div class="line">		console.log(&apos;result: &apos; + result);</div><div class="line">	&#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>然后通过ajax请求来获取到系统当前时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(value = &quot;/time/now&quot;, method = RequestMethod.GET)</div><div class="line">@ResponseBody</div><div class="line">public SeckillResult&lt;Long&gt; time()&#123;</div><div class="line">	Date now = new Date();</div><div class="line">	return new SeckillResult&lt;Long&gt;(true, now.getTime());</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在SeckillController中的time方法就是用来获取系统时间的，在@RequestMapping注解中显示系统当前时间的URL是“/time/now”，限制了请求方式为GET，所以在seckill.js中使用$.get()方法</p>
+<p>简单说下$.get()方法</p>
+<blockquote>
+<p>$.get(URL,data,function(data,status,xhr),dataType)</p>
+<ul>
+<li>URL：必需，规定您需要请求的 URL</li>
+<li>data：可选，规定连同请求发送到服务器的数据</li>
+<li>function(data,status,xhr)：可选，规定当请求成功时运行的函数<ul>
+<li>data：包含来自请求的结果数据</li>
+<li>status：包含请求的状态（”success”、”notmodified”、”error”、”timeout”、”parsererror”）</li>
+<li>xhr：包含 XMLHttpRequest 对象</li>
+</ul>
+</li>
+<li>dataType：可选，规定预期的服务器响应的数据类型，默认地，jQuery 会智能判断。<br>可能的类型：<ul>
+<li>xml - 一个 XML 文档</li>
+<li>html - HTML 作为纯文本</li>
+<li>text - 纯文本字符串</li>
+<li>script - 以 JavaScript 运行响应，并以纯文本返回</li>
+<li>json - 以 JSON 运行响应，并以 JavaScript 对象返回</li>
+<li>jsonp - 使用 JSONP 加载一个 JSON 块，将添加一个 “?callback=?” 到 URL 来规定回调</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$.get(seckill.URL.now, &#123;&#125;, function(result)&#123;</div><div class="line">	if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">		var nowTime = result[&apos;data&apos;];</div><div class="line">		//时间判断，计时交互</div><div class="line">		seckill.countdown(seckillId, nowTime, startTime, endTime);</div><div class="line">	&#125;else&#123;</div><div class="line">		console.log(&apos;result: &apos; + result);</div><div class="line">	&#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>第一个参数是请求的URL，由于URL太多，为了后期维护、代码的整洁，所以要对URL进行统一的管理，在seckill中新建一个属性URL，用于封装秒杀相关ajax的URL<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">//封装秒杀相关ajax的URL </div><div class="line">URl : &#123;</div><div class="line">	now : function()&#123;</div><div class="line">		return &apos;/seckill/time/now&apos;;</div><div class="line">	&#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<p>在SeckillController中的time方法返回的是SeckillResult<long>类型的对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public class SeckillResult&lt;T&gt; &#123;</div><div class="line">	</div><div class="line">	private boolean success;</div><div class="line">	</div><div class="line">	private T data;</div><div class="line">	</div><div class="line">	private String error;</div><div class="line">&#125;</div></pre></td></tr></table></figure></long></p>
+<p>这是SeckillResult中定义的属性，其中success是判断是否成功请求，所以在$.get()方法的回调函数中要判断请求是否为空，如果不为空，则在控制台输出信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">   var nowTime = result[&apos;data&apos;];</div><div class="line">   //时间判断，计时交互</div><div class="line">   seckill.countdown(seckillId, nowTime, startTime, endTime);</div><div class="line">&#125;else&#123;</div><div class="line">   console.log(&apos;result: &apos; + result);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果请求成功，就可以获取到系统当前时间，再加上之前获取到的三个参数，就可以进行时间判断，判断系统当前时间在不在秒杀活动期内，如果不在是秒杀未开始还是秒杀已结束</p>
+<p>在seckill中创建countdown函数，用于时间判断<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">countdown : function(seckillId, nowTime, startTime, endTime)&#123;</div><div class="line">	var seckillBox = $(&apos;#seckill-box&apos;);</div><div class="line">	//时间判断</div><div class="line">	if(nowTime &gt; endTime)&#123;</div><div class="line">		//秒杀结束</div><div class="line">		seckillBox.html(&apos;秒杀结束!&apos;);</div><div class="line">	&#125;else if(nowTime &lt; startTime)&#123;</div><div class="line">		//秒杀未开始，计时事件绑定</div><div class="line">		var killTime = new Date(startTime + 1000);//设置基准时间</div><div class="line">		seckillBox.countdown(killTime, function(event)&#123;</div><div class="line">			//时间格式</div><div class="line">			var format = event.strftime(&apos;秒杀倒计时: %D天 %H时 %M分 %S秒&apos;);</div><div class="line">			//时间完成后回调事件</div><div class="line">		&#125;).on(&apos;finish.countdown&apos;, function()&#123;</div><div class="line">			//调用执行秒杀的函数</div><div class="line">			seckill.handleSeckill(seckillId, seckillBox);</div><div class="line">		&#125;);</div><div class="line">	&#125;else&#123;</div><div class="line">		//调用执行秒杀的函数</div><div class="line">		seckill.handleSeckill(seckillId, seckillBox);</div><div class="line">	&#125;</div><div class="line">&#125;,</div></pre></td></tr></table></figure></p>
+<p>因为对于时间判断的不同结果，要在详情页中展示不同的内容，所以在detail.jsp中专门设置了一个span，用于显示时间判断的结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;div class=&quot;panel-body&quot;&gt;</div><div class="line">	&lt;h2 class=&quot;text-danger&quot;&gt;</div><div class="line">		&lt;!-- 显示time图标 --&gt;</div><div class="line">		&lt;span class=&quot;glyphicon glyphicon-time&quot;&gt;&lt;/span&gt; </div><div class="line">		&lt;!-- 显示面板 --&gt;</div><div class="line">		&lt;span class=&quot;glyphicon&quot; id=&quot;seckill-box&quot;&gt;&lt;/span&gt;</div><div class="line">	&lt;/h2&gt;</div><div class="line">&lt;/div&gt;</div></pre></td></tr></table></figure></p>
+<p>提前设置了埋点，id为seckill-box，在seckill.js通过jQuery的加载器获取到这个span节点</p>
+<p>然后进行时间判断<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">if(nowTime &gt; endTime)&#123;</div><div class="line">	//秒杀结束</div><div class="line">	seckillBox.html(&apos;秒杀结束!&apos;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>系统当前时间大于秒杀的结束时间，说明秒杀结束，这里不用和后端做通信，可以直接通过时间的判断就再详情页显示“秒杀结束”的字样，因为时间到了，不管有没有库存，都无所谓了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">if(nowTime &lt; startTime)&#123;</div><div class="line">	//秒杀未开始，计时事件绑定</div><div class="line">	var killTime = new Date(startTime + 1000);//设置基准时间</div><div class="line">	seckillBox.countdown(killTime, function(event)&#123;</div><div class="line">		//时间格式</div><div class="line">		var format = event.strftime(&apos;秒杀倒计时: %D天 %H时 %M分 %S秒&apos;);</div><div class="line">		//时间完成后回调事件</div><div class="line">	&#125;).on(&apos;finish.countdown&apos;, function()&#123;</div><div class="line">		//调用执行秒杀的函数</div><div class="line">		seckill.handleSeckill(seckillId, seckillBox);</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>系统当前时间小于秒杀开启时间，秒杀未开始，在详情页显示倒计时，既然是倒计时，就要给系统一个基准时间，其实也就是秒杀的开启时间，但是这里在秒杀开始时间的基础+1s，防止用户端的计时偏移</p>
+<p>接着使用Bootstrap提供的countdown方法，实际上就是一个事件绑定方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">seckillBox.countdown(killTime, function(event)&#123;</div><div class="line">	//时间格式</div><div class="line">	var format = event.strftime(&apos;秒杀倒计时: %D天 %H时 %M分 %S秒&apos;);</div><div class="line">	seckillBox.html(format);</div><div class="line">	//倒计时完成后回调事件</div><div class="line">&#125;)</div></pre></td></tr></table></figure></p>
+<p>countdown事件绑定方法中也有一个回调函数，当日期在不断的变化的时候，这个回调函数会做相应的输出，对日期的格式做个调整</p>
+<p>countdown插件只是负责倒计时，倒计时完成后就可以执行秒杀操作了，所以在countdown时间绑定后再接上一个事件操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">.on(&apos;finish.countdown&apos;, function()&#123;</div><div class="line">	//调用执行秒杀的函数</div><div class="line">	seckill.handleSeckill(seckillId, seckillBox);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>事件的名字是finish.countdown，再加上一个回调函数，用于倒计时完成后回调事件，在这个函数中要调用执行秒杀的函数</p>
+<p>这里把执行秒杀的函数单独的提取出来，一是降低耦合，二是避免代码重复，因为在最初调用时间判断函数countdown的时候，可能秒杀正在进行，而上面的代码是秒杀未开始，倒计时完成后才可以执行秒杀，在多个地方需要执行秒杀的操作，所以要把执行秒杀的操作单独创建一个函数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line">handleSeckill : function(seckillId, node)&#123;</div><div class="line">	//获取秒杀地址，控制显示逻辑，执行秒杀</div><div class="line">	node.hide()</div><div class="line">		.html(&apos;&lt;button class=&quot;btn btn-primary btn-lg&quot; id=&quot;killBtn&quot;&gt;开始秒杀&lt;/button&gt;&apos;);</div><div class="line">	$.post(seckill.URL.exposer(seckillId), &#123;&#125;, function(result)&#123;</div><div class="line">		//在回调函数中执行交互流程</div><div class="line">		if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">			var exposer = result[&apos;data&apos;];</div><div class="line">			if(exposer[&apos;exposed&apos;])&#123;</div><div class="line">				//开启秒杀，获取秒杀地址</div><div class="line">				var md5 = exposer[&apos;md5&apos;];</div><div class="line">				var killUrl = seckill.URL.execution(seckillId, md5);</div><div class="line">				console.log(&apos;killUrl: &apos; + killUrl);</div><div class="line">				//绑定一次点击事件</div><div class="line">				$(&apos;#killBtn&apos;).one(&apos;click&apos;, function()&#123;</div><div class="line">					//执行秒杀请求</div><div class="line">					//1.禁用按钮</div><div class="line">					$(this).addClass(&apos;disabled&apos;);</div><div class="line">						</div><div class="line">					//2.发送秒杀请求执行秒杀</div><div class="line">					$.post(killUrl, &#123;&#125;, function(result)&#123;</div><div class="line">						if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">							var killResult = result[&apos;data&apos;];</div><div class="line">							var state = killResult[&apos;state&apos;];</div><div class="line">							var stateInfo = killResult[&apos;stateInfo&apos;];</div><div class="line">								</div><div class="line">							//3.显示秒杀结果</div><div class="line">							node.html(&apos;&lt;span class=&quot;label label-success&quot;&gt;&apos; + stateInfo + &apos;&lt;/span&gt;&apos;);</div><div class="line">						&#125;</div><div class="line">					&#125;);</div><div class="line">				&#125;);</div><div class="line">				node.show();</div><div class="line">			&#125;else&#123;</div><div class="line">				//未开启秒杀</div><div class="line">				var now = exposer[&apos;now&apos;];</div><div class="line">				var start = exposer[&apos;start&apos;];</div><div class="line">				var end = exposer[&apos;end&apos;];</div><div class="line">				seckill.countdown(seckillId, now, start, end);</div><div class="line">			&#125;</div><div class="line">		&#125;else&#123;</div><div class="line">			console.log(&apos;result: &apos; + result);</div><div class="line">		&#125;</div><div class="line">	&#125;);</div><div class="line">&#125;.</div></pre></td></tr></table></figure>
+<p>这个方法的参数有个node，用来获取节点的，因为之前在detail.jsp中有专门显示时间判断的结果的span，当可以进行秒杀的时候，这个span显示的就是一个按钮，所以这里也要获取这个span节点，来对这个span进行操作，加入一个button标签<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">node.hide()</div><div class="line">	.html(&apos;&lt;button class=&quot;btn btn-primary btn-lg&quot; id=&quot;killBtn&quot;&gt;开始秒杀&lt;/button&gt;&apos;);</div></pre></td></tr></table></figure></p>
+<p>插入按钮后先不要显示出来，因为后面还要对用户信息也就是手机号进行验证</p>
+<p>执行秒杀操作之前，就要先取得秒杀的地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(</div><div class="line">		value = &quot;/&#123;seckillId&#125;/exposer&quot;, </div><div class="line">		method = RequestMethod.POST,</div><div class="line">		produces = &#123;&quot;application/json;charset=UTF-8&quot;&#125;)</div><div class="line">@ResponseBody</div><div class="line">public SeckillResult&lt;Exposer&gt; exposer(@PathVariable(&quot;seckillId&quot;) Long seckillId)&#123;</div><div class="line">		</div><div class="line">	SeckillResult&lt;Exposer&gt; result;</div><div class="line">	try &#123;</div><div class="line">		Exposer exposer = seckillService.exportSeckillUrl(seckillId);</div><div class="line">		result = new SeckillResult&lt;Exposer&gt;(true, exposer);</div><div class="line">	&#125; catch (Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">		result = new SeckillResult&lt;Exposer&gt;(false, e.getMessage());</div><div class="line">	&#125;</div><div class="line">	return result;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在SeckillController的exposer方法就是用来暴露秒杀地址的，这个方法只接收POST请求，返回的是SeckillResult对象，类型是Exposer、</p>
+<p>在seckill.js中使用$.post()方法，类似前面讲过的$.get()方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">$.post(seckill.URL.exposer(seckillId), &#123;&#125;, function(result)&#123;</div><div class="line">	//在回调函数中执行交互流程</div><div class="line">	if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">		var exposer = result[&apos;data&apos;];</div><div class="line">	&#125;else&#123;</div><div class="line">		console.log(&apos;result: &apos; + result);</div><div class="line">	&#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>要传入请求的URL，也要放在seckill的URL属性中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">exposer : function(seckillId)&#123;</div><div class="line">	return &apos;/seckill/&apos; + seckillId + &apos;/exposer&apos;;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这个URL需要传递秒杀商品的id，因为不同的秒杀商品需要相应的UEL</p>
+<p>首先还是要判断ajax请求是否成功，如果没有请求成功，在控制台打印信息</p>
+<p>如果请求成功，获取$.post()方法返回过来的数据，是Exposer类型的，封装在SeckillResult的data属性中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">public class Exposer &#123;</div><div class="line">	</div><div class="line">	//是否开启秒杀</div><div class="line">	private boolean exposed;</div><div class="line">	</div><div class="line">	//加密措施</div><div class="line">	private String md5;</div><div class="line">	</div><div class="line">	//id</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	//系统当前时间（毫秒）</div><div class="line">	private long now;</div><div class="line">	</div><div class="line">	//秒杀开启时间</div><div class="line">	private long start;</div><div class="line">	</div><div class="line">	//秒杀结束时间</div><div class="line">	private long end;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>获取到Exposer对象后，在Exposer类中有一个exposed属性，用来判断是否开启秒杀，如果开启秒杀，就要控制之前定义的按钮，先绑定点击事件，然后显示出来</p>
+<p>如果不开启秒杀，就返回系统当前时间、秒杀开启时间、秒杀结束时间，再调用countdown函数<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">if(exposer[&apos;exposed&apos;])&#123;</div><div class="line"></div><div class="line">&#125;else&#123;</div><div class="line">	//未开启秒杀</div><div class="line">	var now = exposer[&apos;now&apos;];</div><div class="line">	var start = exposer[&apos;start&apos;];</div><div class="line">	var end = exposer[&apos;end&apos;];</div><div class="line">	seckill.countdown(seckillId, now, start, end);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>既然都到这一步了，什么情况下还是秒杀未开始？</p>
+<blockquote>
+<p>当不同的终端显示过长的时间的时候，可能出现一些偏差，用户显示已经开启秒杀，但是实际上服务器的时间还没到，虽然时间差很小，但是还是要重新计算计时逻辑，所以调用countdown函数</p>
+</blockquote>
+<p>判断开启秒杀之后，先要获取秒杀地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">//开启秒杀，获取秒杀地址</div><div class="line">var md5 = exposer[&apos;md5&apos;];</div><div class="line">var killUrl = seckill.URL.execution(seckillId, md5);</div><div class="line">console.log(&apos;killUrl: &apos; + killUrl);</div></pre></td></tr></table></figure></p>
+<p>用于执行秒杀操作的URL需要经过MD5的加密，所以还要从后端获取到MD5，同样，ajax请求的URL都要封装在seckill.js的URL属性中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">execution : function(seckillId, md5)&#123;</div><div class="line">	return &apos;/seckill/&apos; + seckillId + &apos;/&apos; + md5 + &apos;/execution&apos;;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这些URL之前在Controller层都已经定义好的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">@RequestMapping(</div><div class="line">		value = &quot;/&#123;seckillId&#125;/&#123;md5&#125;/execution&quot;,</div><div class="line">		method = RequestMethod.POST,</div><div class="line">		produces = &#123;&quot;application/json;charset=UTF-8&quot;&#125;)</div><div class="line">@ResponseBody</div><div class="line">public SeckillResult&lt;SeckillExecution&gt; execute(@PathVariable(&quot;seckillId&quot;) Long seckillId, </div><div class="line">												   @PathVariable(&quot;md5&quot;) String md5,</div><div class="line">												   @CookieValue(value = &quot;killPhone&quot;, required = false) Long phone)</div></pre></td></tr></table></figure></p>
+<p>获取到了执行秒杀的URL，就可以控制按钮，绑定点击事件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">//绑定一次点击事件</div><div class="line">$(&apos;#killBtn&apos;).one(&apos;click&apos;, function()&#123;</div><div class="line">	//执行秒杀请求</div><div class="line">	//1.禁用按钮</div><div class="line">	$(this).addClass(&apos;disabled&apos;);</div><div class="line">						</div><div class="line">	//2.发送秒杀请求执行秒杀</div><div class="line">	$.post(killUrl, &#123;&#125;, function(result)&#123;</div><div class="line">		if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">			var killResult = result[&apos;data&apos;];</div><div class="line">			var state = killResult[&apos;state&apos;];</div><div class="line">			var stateInfo = killResult[&apos;stateInfo&apos;];</div><div class="line">								</div><div class="line">			//3.显示秒杀结果</div><div class="line">			node.html(&apos;&lt;span class=&quot;label label-success&quot;&gt;&apos; + stateInfo + &apos;&lt;/span&gt;&apos;);</div><div class="line">		&#125;</div><div class="line">	&#125;);</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>但是只绑定一次点击事件，防止用户连续点击，比如用户不放心页面是否响应，所以可能会连续的点击按钮，如果不在这控制的话，这些点击最后都会发送到服务器端，会造成服务器端在同一时间接到大量相同的URL请求，对各方面都有影响</p>
+<p>所以点击完之后就要禁用按钮，通过this指代当前对象，也就是相当于使用$(‘#killBtn’)</p>
+<p>之后就是发送秒杀请求，执行秒杀操作，在SeckillController的execute方法只接收POST请求，所以使用$.post()方法</p>
+<p>然后通过SeckillResult中的success属性判断是否请求成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">if(phone == null)&#123;</div><div class="line">	return new SeckillResult&lt;SeckillExecution&gt;(false, &quot;未注册&quot;);</div><div class="line">&#125;</div><div class="line">//SeckillResult&lt;SeckillExecution&gt; result;</div><div class="line">try &#123;</div><div class="line">	SeckillExecution execution = seckillService.executeSeckill(seckillId, phone, md5);</div><div class="line">	return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125; catch (RepeatKillException e) &#123;</div><div class="line">	SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.REPEAT_KILL);</div><div class="line">	return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125; catch (SeckillCloseException e) &#123;</div><div class="line">	SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.END);</div><div class="line">	return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125; catch (Exception e) &#123;</div><div class="line">	logger.error(e.getMessage(), e);</div><div class="line">	SeckillExecution execution = new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);</div><div class="line">	return new SeckillResult&lt;SeckillExecution&gt;(true, execution);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这是SeckillController的execute方法，返回的都是SeckillExecution对象，这些对象存放在SeckillResult的data属性中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">public class SeckillExecution &#123;</div><div class="line">	</div><div class="line">	private long seckillId;</div><div class="line">	</div><div class="line">	//秒杀结果执行后的状态</div><div class="line">	private int state;</div><div class="line">	</div><div class="line">	//状态信息</div><div class="line">	private String stateInfo;</div><div class="line"></div><div class="line">	//秒杀成功对象</div><div class="line">	private SuccessKilled successKilled;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这是SeckillExecution类中定义的方法，在seckill.js中获取到这些属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">$.post(killUrl, &#123;&#125;, function(result)&#123;</div><div class="line">	if(result &amp;&amp; result[&apos;success&apos;])&#123;</div><div class="line">		var killResult = result[&apos;data&apos;];</div><div class="line">		var state = killResult[&apos;state&apos;];</div><div class="line">		var stateInfo = killResult[&apos;stateInfo&apos;];</div><div class="line">								</div><div class="line">		//3.显示秒杀结果</div><div class="line">		node.html(&apos;&lt;span class=&quot;label label-success&quot;&gt;&apos; + stateInfo + &apos;&lt;/span&gt;&apos;);</div><div class="line">	&#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>获取到执行秒杀的结果后，还要在详情页中显示出来，所以控制节点，输出状态信息，因为在SeckillController的execute方法中已经定义了重复秒杀、秒杀结束等异常也算请求成功，只是不对数据库进行操作，但是结果信息要返回到详情页</p>
+<p>最后就可以把按钮显示出来了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">node.show();</div></pre></td></tr></table></figure></p>
+<p>至此，前端页面完成了</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/23/Java笔记之高并发秒杀API-四/" rel="next" title="Java笔记之高并发秒杀API(四)">
+                <i class="fa fa-chevron-left"></i> Java笔记之高并发秒杀API(四)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/touxiang.JPG"
+               alt="Fzero" />
+          <p class="site-author-name" itemprop="name">Fzero</p>
+          <p class="site-description motion-element" itemprop="description">在迷踪岛满级的熊猫信仰贼</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Bootstrap开发页面结构"><span class="nav-number">1.</span> <span class="nav-text">使用Bootstrap开发页面结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#list-jsp"><span class="nav-number">1.1.</span> <span class="nav-text">list.jsp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#detail-jsp"><span class="nav-number">1.2.</span> <span class="nav-text">detail.jsp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交互逻辑"><span class="nav-number">2.</span> <span class="nav-text">交互逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#交互流程"><span class="nav-number">2.1.</span> <span class="nav-text">交互流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页面展示"><span class="nav-number">2.2.</span> <span class="nav-text">页面展示</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交互逻辑编程"><span class="nav-number">2.3.</span> <span class="nav-text">交互逻辑编程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fzero</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
