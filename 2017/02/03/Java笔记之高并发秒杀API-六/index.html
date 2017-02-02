@@ -1,0 +1,924 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇将完成高并发优化，包括：
+
+Redis后端缓存优化
+并发优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java笔记之高并发秒杀API(六)">
+<meta property="og:url" content="http://yoursite.com/2017/02/03/Java笔记之高并发秒杀API-六/index.html">
+<meta property="og:site_name" content="Fzero">
+<meta property="og:description" content="本篇将完成高并发优化，包括：
+
+Redis后端缓存优化
+并发优化">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-63c269153ba56010.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-f6d4d36abdc50ee0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-79d532d43fb41c1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-33e3e8d40d2f6356.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-6ad7e50eaaa14053.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-433dc4ddf3e36a99.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/4221394-006a6bd2fe64221c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-02-02T18:21:14.130Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java笔记之高并发秒杀API(六)">
+<meta name="twitter:description" content="本篇将完成高并发优化，包括：
+
+Redis后端缓存优化
+并发优化">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/4221394-63c269153ba56010.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/02/03/Java笔记之高并发秒杀API-六/"/>
+
+
+
+
+
+  <title> Java笔记之高并发秒杀API(六) | Fzero </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-89586659-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Fzero</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/03/Java笔记之高并发秒杀API-六/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Fzero">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/touxiang.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Fzero">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Fzero" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java笔记之高并发秒杀API(六)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-03T01:41:16+08:00">
+                2017-02-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇将完成高并发优化，包括：</p>
+<ul>
+<li>Redis后端缓存优化</li>
+<li>并发优化</li>
+</ul>
+<a id="more"></a>
+<h2 id="高并发优化分析"><a href="#高并发优化分析" class="headerlink" title="高并发优化分析"></a>高并发优化分析</h2><p>在优化之前要明白高并发发生在哪</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-63c269153ba56010.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="高并发位置分析"></p>
+<p>红色的部分是可能出现高并发的点，绿色部分则没有影响</p>
+<p>当用户进入详情页的是时候，如果秒杀没有开始，在页面就会显示倒计时，如果开始了，就会显示执行秒杀操作的按钮，接着是执行秒杀操作，最后是返回结果</p>
+<h3 id="获取系统时间"><a href="#获取系统时间" class="headerlink" title="获取系统时间"></a>获取系统时间</h3><p>在详情页，当秒杀还没开始的时候，用户会不断的刷新页面，这是很有可能的，这就会造成大量的请求，详情页实际应该部署到CDN节点上，CDN会把详情页做静态化处理，详情页当中还有许多获取静态资源的请求，这些静态资源也会部署到CDN上</p>
+<blockquote>
+<p>CDN的全称是Content Delivery Network，即<a href="http://baike.baidu.com/view/8689800.htm" target="_blank" rel="external">内容分发网络</a>。其基本思路是尽可能避开互联网上有可能影响数据传输速度和稳定性的瓶颈和环节，使内容传输的更快、更稳定。通过在网络各处放置<a href="http://baike.baidu.com/view/3787429.htm" target="_blank" rel="external">节点服务器</a>所构成的在现有的互联网基础之上的一层智能<a href="http://baike.baidu.com/view/747782.htm" target="_blank" rel="external">虚拟网络</a>，CDN系统能够实时地根据<a href="http://baike.baidu.com/view/411702.htm" target="_blank" rel="external">网络流量</a>和各节点的连接、负载状况以及到用户的距离和响应时间等综合信息将用户的请求重新导向离用户最近的服务节点上。其目的是使用户可就近取得所需内容，解决 Internet网络拥挤的状况，提高用户访问网站的响应速度。 ——百度百科</p>
+</blockquote>
+<p>当详情页部署在CDN上的时候，这些获取静态资源的请求是不用访问系统，这样也会导致获取不到系统时间，无法对是否开启秒杀做判断，所以要单独的获取时间</p>
+<p>也就是，在详情页可能会有大量的获取静态资源的请求，无论是在秒杀开始前还是秒杀开始后，对于这种有可能出现高并发的地方，其中一种的措施是把详情页部署在CDN中，这样不同的用户会请求距离最近的CDN节点来获取这些静态资源，但是这些请求是不用访问系统的，为了时刻获取到系统时间，所以就要从系统中获取时间</p>
+<p>那么从系统中获取时间的操作需不需要优化呢？<br><strong> 从系统中获取时间不需要优化 </strong></p>
+<p>Java访问一次内存(Cacheline)大约10ns，1秒等于十亿纳秒，当我们访问系统时间，本质上也就是new了一个日期对象，然后返回给用户，在理想状态下，这个操作可以1秒中实现一亿次，没有后端的访问，所以这个操作可以不用优化</p>
+<h3 id="秒杀地址接口分析"><a href="#秒杀地址接口分析" class="headerlink" title="秒杀地址接口分析"></a>秒杀地址接口分析</h3><p>秒杀地址接口无法使用CDN缓存，因为CDN适合对于请求的资源不宜变化的，但是秒杀地址的返回数据是在变化的，随着时间的推移，秒杀活动从未开始到结束，这都是不断变化的</p>
+<p>但是适合使用服务器端缓存，比如Redis，先访问数据库，获取到了秒杀的数据，然后放到Redis缓存中，当下一次访问的时候，直接在缓存中查找，缓存中如果有相应的数据，直接返回，而不用再访问数据库</p>
+<h3 id="秒杀操作优化分析"><a href="#秒杀操作优化分析" class="headerlink" title="秒杀操作优化分析"></a>秒杀操作优化分析</h3><p>该操作同样也不能使用CDN缓存，大部分的写操作和核心部分的请求一般无法使用CDN缓存，并且后端缓存困难，因为库存问题，极短的时间内都要对数据库进行更新操作，无法使用缓存技术，否则会出现不一致的错误</p>
+<h3 id="Java控制事务行为分析"><a href="#Java控制事务行为分析" class="headerlink" title="Java控制事务行为分析"></a>Java控制事务行为分析</h3><p><img src="http://upload-images.jianshu.io/upload_images/4221394-f6d4d36abdc50ee0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Java控制事务行为"></p>
+<p>当事务开启的时候，另一个事务要对数据库的同一行进行操作，在当前事务没有commit或者rollback之前，其他事务是无法执行的，此时，正在执行的事务获得了数据库该行的行级锁</p>
+<p>当然，如果一个事务持有行级锁的时间极短的话，也可以忽略，但是实际的情况并没有那么理想<br><img src="http://upload-images.jianshu.io/upload_images/4221394-79d532d43fb41c1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="事务行为延迟分析"></p>
+<p>客户端执行update减库存操作，获取到执行后的结果，然后SQL语句会通过网络把结果返回给MySQL的时候，网络延迟是必须考虑的，还要考虑的就是GC</p>
+<blockquote>
+<p>Java GC：(Garbage Collection)垃圾回收机制</p>
+</blockquote>
+<p>GC又分新生代GC和老生代GC，GC不一定每次出现，但是一定会出现</p>
+<p>具体关于GC的内容有很多，这也是成为Java开发人员必须要理解掌握的，我作为初学者，也没有深入了解过GC，水平有限，这里只是先提到，要成为Java开发者，GC是避不开的</p>
+<p>当Java客户端执行这个事务的时候，Java客户端和数据库之间的网络延迟和可能的GC会持续较长时间，特别对于秒杀系统来说，行级锁的持有时间是一定要优化的</p>
+<p>对异地机房之间的通信做一个简单的分析<br><img src="http://upload-images.jianshu.io/upload_images/4221394-33e3e8d40d2f6356.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="异地机房"></p>
+<p>也就是上海机房和北京机房之间的通讯(一来一回)大约需要13毫秒，这是理想状态，实际应该在20毫秒左右，也就是1秒最多执行50次相同的操作</p>
+<p>所以优化的思路是：<br><strong> 把客户端逻辑放在MySQL服务端，避免网络延迟和GC的影响，从而减少行级锁的持有时间 </strong></p>
+<h2 id="Redis后端缓存优化"><a href="#Redis后端缓存优化" class="headerlink" title="Redis后端缓存优化"></a>Redis后端缓存优化</h2><p>首先是Redis安装，这个就不多说了，Windows的最好下载MSI，Linux用户可以下载安装包，在控制台进入Redis目录，使用make、make install安装Redis</p>
+<p>使用redis-server命令启动Redis，这里只是简单的使用Redis，所以就使用Redis默认的配置</p>
+<p>使用redis-cli -p 6379命令连接Redis，默认的端口就是6379</p>
+<p>要使用Java访问Redis，需要在pom.xml中添加相应的依赖，首先是引入的是Redis的客户端Jedis，在<a href="https://redis.io/clients" target="_blank" rel="external">Redis官网</a>中可以看到各种语言访问redis的客户端是什么</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/4221394-6ad7e50eaaa14053.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Redis客户端"></p>
+<p>星号代表的是推荐的客户端，接着引入Jedis<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;!-- redis客户端：jedis --&gt;</div><div class="line">&lt;dependency&gt;</div><div class="line">  &lt;groupId&gt;redis.clients&lt;/groupId&gt;</div><div class="line">  &lt;artifactId&gt;jedis&lt;/artifactId&gt;</div><div class="line">  &lt;version&gt;2.7.3&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure></p>
+<p>因为要优化的是秒杀暴露接口，所以打开SeckillServiceImpl类，找到exportSeckillUrl方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Seckill seckill = seckillDao.queryById(seckillId);</div></pre></td></tr></table></figure></p>
+<p>要优化的地方就是这一步，对数据库的操作，所有秒杀单都要请求暴露秒杀地址接口，可以使用Redis缓存起来，这样可以降低数据库的访问压力</p>
+<p>使用Redis常用的基本的逻辑是：</p>
+<blockquote>
+<p>先从cache中取数据，如果cache中有相应的数据，则直接返回，如果cache中没有数据，则从数据库中获取数据，获得的数据先put到cache中，然后返回给用户</p>
+</blockquote>
+<p>为了后期维护和可扩展性，肯定不能把这些逻辑直接写在业务代码中，也就是不能直接现在SeckillServiceImpl类的exportSeckillUrl方法中</p>
+<p>之前说过对数据库或者是其他用于存储的类所在的包是DAO，也就是数据访问对象，在Dao包下新建一个cache包，在cache包下新建一个RedisDao类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">public class RedisDao &#123;</div><div class="line">	</div><div class="line">	private final Logger logger = LoggerFactory.getLogger(this.getClass());</div><div class="line">	</div><div class="line">	private final JedisPool jedisPool;</div><div class="line">	</div><div class="line">	public RedisDao(String ip, int port)&#123;</div><div class="line">		jedisPool = new JedisPool(ip, port);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>要在后台打印信息，所以使用slf4j，之前已经引入了Jedis的依赖，所以可以直接使用，有点类似于数据库连接池的ConnectionPool</p>
+<p>然后初始化一个构造方法，出入ip和port，用于连接Redis，因为本项目只是简单的运用Redis，不需要复杂的配置，所以直接初始化JedisPool即可</p>
+<p>这个类是对Redis进行操作，我们使用Redis是要从缓存中获取Seckill对象，如果缓存中没有，还要对数据库进行操作，并把数据存放在缓存中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 从Redis获取数据，由于在redis中的数据都是字节数组，所以需要对数据进行反序列化，转化为想要的类型对象</div><div class="line"> * @param seckillId</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">public Seckill getSeckill(long seckillId)&#123;</div><div class="line">	//redis操作逻辑</div><div class="line">	try&#123;</div><div class="line">		Jedis jedis = jedisPool.getResource();</div><div class="line">		try&#123;</div><div class="line">			String key = &quot;seckill: &quot; + seckillId;</div><div class="line">			//没有实现内部序列化操作，采用自定义序列化</div><div class="line">			byte[] bytes = jedis.get(key.getBytes());	</div><div class="line">			if(bytes != null)&#123;</div><div class="line">				//空对象</div><div class="line">				Seckill seckill = schema.newMessage();</div><div class="line">				ProtostuffIOUtil.mergeFrom(bytes, seckill, schema);</div><div class="line">				//seckill被反序列</div><div class="line">				return seckill;</div><div class="line">			&#125;</div><div class="line">		&#125; finally &#123;</div><div class="line">			jedis.close();</div><div class="line">		&#125;</div><div class="line">	&#125; catch(Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">	&#125;</div><div class="line">	return null;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这个方法用于从Redis中获取数据</p>
+<p>首先是获取到Jedis对象，使用了Jedis就要关闭，所以在接下来的逻辑还要再try/catch，在finally中关闭Jedis</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">byte[] bytes = jedis.get(key.getBytes());</div></pre></td></tr></table></figure>
+<p>由于Redis并没有实现内部序列化操作，所以在Redis中存储的数据均为字节码数组，所以就要通过反序列化获取到Object数据，也就是Seckill对象</p>
+<p>在<a href="https://github.com/eishay/jvm-serializers/wiki" target="_blank" rel="external">GitHub</a>上专门有一个对Java序列化技术的性能比对</p>
+<p>本项目采用自定义序列化，使用的是protostuff，需要两个依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 自定义序列化技术 --&gt;</div><div class="line">&lt;dependency&gt;</div><div class="line">  &lt;groupId&gt;com.dyuproject.protostuff&lt;/groupId&gt;</div><div class="line">  &lt;artifactId&gt;protostuff-core&lt;/artifactId&gt;</div><div class="line">  &lt;version&gt;1.0.12&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div><div class="line">	</div><div class="line">&lt;dependency&gt;</div><div class="line">  &lt;groupId&gt;com.dyuproject.protostuff&lt;/groupId&gt;</div><div class="line">  &lt;artifactId&gt;protostuff-runtime&lt;/artifactId&gt;</div><div class="line">  &lt;version&gt;1.0.12&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure></p>
+<p>这样就可以实现把一个对象转换成二进制数组，然后传到Redis中</p>
+<p>使用protostuff的API，全局的定义一个动态的schema，是由protostuff自定转换的，对性能几乎没影响<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">private RuntimeSchema&lt;Seckill&gt; schema = RuntimeSchema.createFrom(Seckill.class);</div></pre></td></tr></table></figure></p>
+<p>class对象代表类的字节码对象，也就是这个类的类类型，可以通过反射获取到这个类有哪些属性和方法，RuntimeSchema就是基于传递参数的字节码对象来做一个模式，当创建对象的时候，会根据不同的模式赋予相应的值</p>
+<p>序列化就是根据字节码和字节码所对应的对象有哪些属性，把字节码的数据传递给那些属性，这样就可以序列化好一个对象</p>
+<p>传递的参数是这个对象的class，也就是这个对象的类类型，再传递一个类似schema的内容，会描述这个对象的结构</p>
+<p>回到getSeckill方法中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">//Redis没有实现内部序列化操作，采用自定义序列化</div><div class="line">byte[] bytes = jedis.get(key.getBytes());	</div><div class="line">if(bytes != null)&#123;</div><div class="line">	Seckill seckill = schema.newMessage();</div><div class="line">	ProtostuffIOUtil.mergeFrom(bytes, seckill, schema);</div><div class="line">	return seckill;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>使用Jedis的get方法，返回的是字节码数组，然后对字节码数组进行判断，如果bytes不为空，则是从Redis中获取到了数据，然后使用protostuff进行转换</p>
+<p>protostuff提供了一个Util工具类来进行转换，需要传递的参数有这个对象的字节码数组，空的对象，和自定义的模式schema，然后protostuff就会把字节码数组按照传入的模式，即schema，将数据传入空对象中，这样Seckill对象就已经被赋值了，这样就是把一个字节数组转化为我们想要的对象，也就是对象反序列化</p>
+<p>当Redis缓存中有数据的时候，使用getSeckill方法可以获取到数据，当Redis缓存中没有数据的时候，还需要向Redis缓存中存放数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 把数据放入Redis中时，需要对数据进行序列化，转化为字节数组</div><div class="line"> * @param seckill</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">public String putSeckill(Seckill seckill)&#123;</div><div class="line">	try&#123;</div><div class="line">		Jedis jedis = jedisPool.getResource();</div><div class="line">		try&#123;</div><div class="line">			String key = &quot;seckill: &quot; + seckill.getSeckillId();</div><div class="line">			byte[] bytes = ProtostuffIOUtil.toByteArray(seckill, schema, LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));</div><div class="line">				</div><div class="line">			//超时缓存</div><div class="line">			int timeout = 60 * 60;//一小时</div><div class="line">			String result = jedis.setex(key.getBytes(), timeout, bytes);</div><div class="line">			return result;</div><div class="line">		&#125; finally &#123;</div><div class="line">			jedis.close();</div><div class="line">		&#125;</div><div class="line">	&#125; catch(Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">	&#125;</div><div class="line">	return null;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>大部分代码和getSeckill方法相同，主要分析不同部分<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">try&#123;</div><div class="line">	String key = &quot;seckill: &quot; + seckill.getSeckillId();</div><div class="line">	byte[] bytes = ProtostuffIOUtil.toByteArray(seckill, schema, LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));</div><div class="line">				</div><div class="line">	//超时缓存</div><div class="line">	int timeout = 60 * 60;//一小时</div><div class="line">	String result = jedis.setex(key.getBytes(), timeout, bytes);</div><div class="line">	return result;</div><div class="line">&#125; finally &#123;</div><div class="line">	jedis.close();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>我们需要把Object对象，这里是Seckill对象转换成字节码数组，然后put到Redis中，这个过程也就是序列化的过程</p>
+<p>首先设置一个key，然后使用protostuff的IOUtil工具来得到相应对象的字节码数组，传递的对象有Seckill对象本身，之前自定义的模式schema，需要一个缓存器，缓存器的大小直接设置默认的大小即可，当对象数据特别大的时候，会有缓冲的过程</p>
+<p>接着使用Jedis的setex方法，也就是超时缓存，返回的是String类型，如果错误，则返回的是错误信息，如果正确，则会返回OK</p>
+<p>然后回到SeckillServiceImpl类，既然有了RedisDao，通过注解注入到Spring容器中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@Autowired</div><div class="line">private RedisDao redisDao;</div></pre></td></tr></table></figure></p>
+<p>然后把exportSeckillUrl方法中<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Seckill seckill = seckillDao.queryById(seckillId);</div></pre></td></tr></table></figure></p>
+<p>替换为一下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">//优化点：缓存优化</div><div class="line">//1、访问redis</div><div class="line">Seckill seckill = redisDao.getSeckill(seckillId);</div><div class="line">if(seckill == null)&#123;</div><div class="line">	//2、访问数据库</div><div class="line">	seckill = seckillDao.queryById(seckillId);</div><div class="line">	if(seckill == null)&#123;</div><div class="line">		return new Exposer(false, seckillId);</div><div class="line">	&#125;else&#123;</div><div class="line">		//3、放入Redis中</div><div class="line">		redisDao.putSeckill(seckill);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先通过RedisDao从Redis中获取数据，然后对获取到的数据进行判断，如果为空，说明缓存中没有相应的数据，这时就需要从数据库中获取数据，获取到的数据还要再放入Redis缓存中</p>
+<h2 id="秒杀操作并发优化"><a href="#秒杀操作并发优化" class="headerlink" title="秒杀操作并发优化"></a>秒杀操作并发优化</h2><p><img src="http://upload-images.jianshu.io/upload_images/4221394-433dc4ddf3e36a99.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="事务执行流程"></p>
+<p>当一个事务在执行对数据库的更改操作的时候，会获得该行的行级锁，然后通过update返回的结果来决定是否进行insert操作，最后是commit或者rollback，这时行级锁也被释放，期间肯定会有网络延迟和GC的影响</p>
+<h3 id="简单优化"><a href="#简单优化" class="headerlink" title="简单优化"></a>简单优化</h3><p><img src="http://upload-images.jianshu.io/upload_images/4221394-006a6bd2fe64221c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Paste_Image.png"></p>
+<p>主要的目的是减少行级锁的持有时间，通过对事务执行的流程进行下调换就可以使行级锁的持有时间大幅度减少</p>
+<p>把insert操作放在前面，我们在创建success_killed表的时候就设置了seckilId和userPhone为联合主键，这个主键冲突的概率并不是很高</p>
+<p>然后才是update减库存操作，这时候会获取到该行的行级锁，通过insert的返回结果来决定是否进行update操作，最后是commit或者rollback</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line">@Transactional</div><div class="line">public SeckillExecution executeSeckill(long seckillId, long userPhone, String md5) &#123;</div><div class="line">	if(md5 == null || !md5.equals(getMD5(seckillId)))&#123;</div><div class="line">		throw new SeckillException(&quot;seckill data rewrite&quot;);</div><div class="line">	&#125;</div><div class="line">	//执行秒杀逻辑：减库存 + 记录购买行为</div><div class="line">	Date nowTime = new Date();</div><div class="line">	try &#123;</div><div class="line">		//记录购买行为</div><div class="line">		int insertCount = successKilledDao.insertSuccessKilled(seckillId, userPhone);</div><div class="line">		if(insertCount &lt;= 0)&#123;</div><div class="line">			//重复秒杀</div><div class="line">			throw new RepeatKillException(&quot;seckill repeated&quot;);</div><div class="line">		&#125; else &#123;</div><div class="line">			//减库存</div><div class="line">			int updateCount = seckillDao.reduceNumber(seckillId, nowTime);</div><div class="line">			if(updateCount &lt;= 0)&#123;</div><div class="line">				//没有更新记录，即秒杀活动结束</div><div class="line">				throw new SeckillCloseException(&quot;seckill is closed&quot;);</div><div class="line">			&#125; else &#123;</div><div class="line">				//秒杀成功</div><div class="line">				SuccessKilled successKilled = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);</div><div class="line">				return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, successKilled);</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125; catch(SeckillCloseException e1) &#123;</div><div class="line">		throw e1;</div><div class="line">	&#125; catch(RepeatKillException e2)&#123;</div><div class="line">		throw e2;</div><div class="line">	&#125; catch (Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">		//所有编译期异常转化为运行期异常</div><div class="line">		throw new SeckillException(&quot;seckill inner error: &quot; + e.getMessage());</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>主要改变的是中间try/catch部分</p>
+<h3 id="深度优化"><a href="#深度优化" class="headerlink" title="深度优化"></a>深度优化</h3><p>同样的目的是降低行级锁到commit或者rollback之间的时间，同时还要让MySQL获得更高的QPS，所以将事务SQL放在MySQL端来执行，之前是在MyBatis的配置文件中编写SQL语句的，这里使用存储过程，将编写的SQL语句直接在MySQL端执行</p>
+<p>在sql目录下新建一个seckill.sql文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line">-- 秒杀执行存储过程</div><div class="line">DELIMITER $$ --console ; 转换为 $$</div><div class="line">-- 定义存储过程</div><div class="line">CREATE PROCEDURE `seckill`.`execute_seckill`</div><div class="line">	(in v_seckill_id bigint, in v_phone bigint,</div><div class="line">	 in v_kill_time timestamp, out r_result int)</div><div class="line">	BEGIN</div><div class="line">		DECLARE insert_count int DEFAULT 0;</div><div class="line">		START TRANSACTION;</div><div class="line">		insert ignore into</div><div class="line">			success_killed (seckill_id,user_phone,create_time)</div><div class="line">			value (v_seckill_id,v_phone,v_kill_time);</div><div class="line">		select row_count() into insert_count;</div><div class="line">		IF (insert_count = 0) THEN</div><div class="line">			ROLLBACK;</div><div class="line">			set r_result = -1;-- 重复秒杀</div><div class="line">		ELSEIF (insert_count &lt; 0) THEN</div><div class="line">			ROLLBACK;</div><div class="line">			set r_result = -2;-- 系统错误</div><div class="line">		ELSE</div><div class="line">			update seckill</div><div class="line">			set number = number - 1</div><div class="line">			where seckill_id = v_seckill_id</div><div class="line">				and end_time &gt; v_kill_time</div><div class="line">				and start_time &lt; v_kill_time</div><div class="line">				and number &gt; 0;</div><div class="line">			select row_count() into insert_count;</div><div class="line">			IF (insert_count = 0) THEN</div><div class="line">				ROLLBACK;</div><div class="line">				set r_result = 0;-- 秒杀结束</div><div class="line">			ELSEIF (insert_count &lt; 0) THEN</div><div class="line">				ROLLBACK;</div><div class="line">				set r_result = -2;</div><div class="line">			ELSE </div><div class="line">				COMMIT;</div><div class="line">				set r_result = 1;</div><div class="line">			END IF;</div><div class="line">		END IF;</div><div class="line">	END </div><div class="line">$$</div><div class="line">-- 存储过程定义结束</div></pre></td></tr></table></figure></p>
+<p>首先要知道的是MySQL中的console是用分号来隔离的，但是在存储过程中也是通过分号来决定是否换行，所以使用MySQL的DELIMITER暂时地把MySQL的隔离符号改为$$<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DELIMITER $$ --console ; 转换为 $$</div></pre></td></tr></table></figure></p>
+<p>接着创建存储过程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">CREATE PROCEDURE `seckill`.`execute_seckill`</div><div class="line">	(in v_seckill_id bigint, in v_phone bigint,</div><div class="line">	 in v_kill_time timestamp, out r_result int)</div></pre></td></tr></table></figure></p>
+<p>同时定义一些变量：</p>
+<ul>
+<li>in：输入参数，在存储过程中可以被使用</li>
+<li>out：输出参数，在存储过程中不能被使用，但是可以被赋值</li>
+</ul>
+<p>然后开始编写存储过程的逻辑<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">DECLARE insert_count int DEFAULT 0;</div><div class="line">START TRANSACTION;</div></pre></td></tr></table></figure></p>
+<p>先是定义一个变量insert_count，默认设置为0，然后开启事务</p>
+<p>先执行insert语句，插入用户的购买明细<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">insert ignore into</div><div class="line">	success_killed (seckill_id,user_phone,create_time)</div><div class="line">	value (v_seckill_id,v_phone,v_kill_time);</div><div class="line">select row_count() into insert_count;</div></pre></td></tr></table></figure></p>
+<p>不要忘记ignore关键字，然后使用<strong> MySQL的内置函数row_count()，用于显示上一条修改类型SQL语句执行后被影响的行数 </strong>，把row_count()的值赋值给insert_count变量，接着对insert_count进行判断<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">IF (insert_count = 0) THEN</div><div class="line">	ROLLBACK;</div><div class="line">	set r_result = -1;-- 重复秒杀</div><div class="line">ELSEIF (insert_count &lt; 0) THEN</div><div class="line">	ROLLBACK;</div><div class="line">	set r_result = -2;-- 系统错误</div><div class="line">ELSE</div></pre></td></tr></table></figure></p>
+<ul>
+<li>insert_count = 0：未修改语句，设置输出参数r_result的值为-1，对应之前在Java中创建的数据字典就是重复秒杀</li>
+<li>insert_count &lt; 0：SQL错误/未执行修改SQL，设置输出参数r_result的值为-2，对应之前在Java中创建的数据字典就是系统错误</li>
+</ul>
+<p>如果insert_count的值大于0，则执行update操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">update seckill</div><div class="line">set number = number - 1</div><div class="line">where seckill_id = v_seckill_id</div><div class="line">	and end_time &gt; v_kill_time</div><div class="line">	and start_time &lt; v_kill_time</div><div class="line">	and number &gt; 0;</div><div class="line">select row_count() into insert_count;</div></pre></td></tr></table></figure></p>
+<p>同样最后使用row_count()函数来判断是否commit或者rollback<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">IF (insert_count = 0) THEN</div><div class="line">	ROLLBACK;</div><div class="line">	set r_result = 0;-- 秒杀结束</div><div class="line">ELSEIF (insert_count &lt; 0) THEN</div><div class="line">	ROLLBACK;</div><div class="line">	set r_result = -2;</div><div class="line">ELSE </div><div class="line">	COMMIT;</div><div class="line">	set r_result = 1;</div><div class="line">END IF;</div></pre></td></tr></table></figure></p>
+<ul>
+<li>insert_count = 0：未更改数据，设置输出参数r_result的值为0，对应之前在Java中创建的数据字典就是秒杀结束</li>
+<li>insert_count &lt; 0：SQL错误/未执行修改SQL，设置输出参数r_result的值为-2，对应之前在Java中创建的数据字典就是系统错误</li>
+<li>insert_count &gt; 0：成功更改数据，设置输出参数r_result的值为1，对应之前在Java中创建的数据字典就是秒杀成功</li>
+</ul>
+<p>最后结尾的时候使用$$结束存储过程，然后把换行符再改为分号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">DELIMITER ;</div></pre></td></tr></table></figure></p>
+<p>整个过程就是把insert插入购买明细及update减库存操作放入存储过程中，在MySQL端直接执行这些语句，然后就可以直接调用这个存储过程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">set @r_result = -3;</div><div class="line">-- 执行存储过程</div><div class="line">call execute_seckill(1003,13522233356,now(),@r_result);</div><div class="line">-- 获取结果</div><div class="line">select @r_result;</div></pre></td></tr></table></figure></p>
+<p>首先是定义一个变量，在console中定义变量使用@，通过call执行存储过程</p>
+<p>然后在Service层的SeckillService类中添加通过使用存储过程执行秒杀操作的方法，通过Java客户端来调用存储过程，这时只要获取到返回值，通过数据字典就可以判断执行结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 执行秒杀操作by存储过程</div><div class="line"> * @param seckillId</div><div class="line"> * @param userPhone</div><div class="line"> * @param md5</div><div class="line"> * @return</div><div class="line"> */</div><div class="line">SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5);</div></pre></td></tr></table></figure></p>
+<p>接着在SeckillServiceimpl中复写这个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">public SeckillExecution executeSeckillProcedure(long seckillId, long userPhone, String md5) &#123;</div><div class="line">	if(md5 == null || !md5.equals(getMD5(seckillId)))&#123;</div><div class="line">		return new SeckillExecution(seckillId, SeckillStateEnum.DATA_REWRITE);</div><div class="line">	&#125;</div><div class="line">	Date killTime = new Date();</div><div class="line">	Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();</div><div class="line">	map.put(&quot;seckillId&quot;, seckillId);</div><div class="line">	map.put(&quot;phone&quot;, userPhone);</div><div class="line">	map.put(&quot;killTime&quot;, killTime);</div><div class="line">	map.put(&quot;result&quot;, null);</div><div class="line">	try &#123;</div><div class="line">		seckillDao.killByProcedure(map);</div><div class="line">		int result = MapUtils.getInteger(map, &quot;result&quot;, -2);</div><div class="line">		if(result == 1)&#123;</div><div class="line">			SuccessKilled sk = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);</div><div class="line">			return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, sk);</div><div class="line">		&#125;else&#123;</div><div class="line">			return new SeckillExecution(seckillId, SeckillStateEnum.stateOf(result));</div><div class="line">		&#125;</div><div class="line">	&#125; catch (Exception e) &#123;</div><div class="line">		logger.error(e.getMessage(), e);</div><div class="line">		return new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>首先要验证的是MD5，如果MD5值错误，就返回SeckillExecution对象，数据字典中传递数据被篡改<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">if(md5 == null || !md5.equals(getMD5(seckillId)))&#123;</div><div class="line">	return new SeckillExecution(seckillId, SeckillStateEnum.DATA_REWRITE);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>重新获取系统时间<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Date killTime = new Date();</div></pre></td></tr></table></figure></p>
+<p>接着要使用SeckillDao获取到数据库的执行结果，所以在SeckillDao类中创建一个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 使用存储过程执行秒杀</div><div class="line"> * @param paramMap</div><div class="line"> */</div><div class="line">void killByProcedure(Map&lt;String, Object&gt; paramMap);</div></pre></td></tr></table></figure></p>
+<p>传入的参数是Map，这个方法要在SeckillDao.xml中使用，也就是MyBatis的配置文件，还是要通过MyBatis调用存储过程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;select id=&quot;killByProcedure&quot; statementType=&quot;CALLABLE&quot;&gt;</div><div class="line">	call execute_seckill(</div><div class="line">	#&#123;seckillId, jdbcType=BIGINT, mode=IN&#125;,</div><div class="line">	#&#123;phone, jdbcType=BIGINT, mode=IN&#125;,</div><div class="line">	#&#123;killTime, jdbcType=TIMESTAMP, mode=IN&#125;,</div><div class="line">	#&#123;result, jdbcType=INTEGER, mode=OUT&#125;</div><div class="line">	)</div><div class="line">&lt;/select&gt;</div></pre></td></tr></table></figure></p>
+<p>CALLABLE是jdbc专门为调用存储过程而开发的，使用call，后面跟存储过程的名称</p>
+<p>每个传递的参数都包括要传递的值，jdbc的类型，参数的模式</p>
+<p>回到SeckillServiceImpl的executeSeckillProcedure中，要使用killByProcedure，需要传入Map类型的参数，所以要先声明Map对象，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Map&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();</div><div class="line">map.put(&quot;seckillId&quot;, seckillId);</div><div class="line">map.put(&quot;phone&quot;, userPhone);</div><div class="line">map.put(&quot;killTime&quot;, killTime);</div><div class="line">map.put(&quot;result&quot;, null);</div></pre></td></tr></table></figure></p>
+<p>Result现在为空，所以赋值null</p>
+<p>然后就可以使用SeckillDao来获取数据库执行的结果，因为使用SeckillDao的方法的时候可能会出现异常，所以try/catch<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">try &#123;</div><div class="line">	seckillDao.killByProcedure(map);</div><div class="line">	int result = MapUtils.getInteger(map, &quot;result&quot;, -2);</div><div class="line">	if(result == 1)&#123;</div><div class="line">		SuccessKilled sk = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);</div><div class="line">		return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, sk);</div><div class="line">	&#125;else&#123;</div><div class="line">		return new SeckillExecution(seckillId, SeckillStateEnum.stateOf(result));</div><div class="line">	&#125;</div><div class="line">&#125; catch (Exception e) &#123;</div><div class="line">	logger.error(e.getMessage(), e);</div><div class="line">	return new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后是获取result，使用MapUtil，要使用MapUtil，需要在pom.xml中引入依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;dependency&gt;</div><div class="line">  &lt;groupId&gt;commons-collections&lt;/groupId&gt;</div><div class="line">  &lt;artifactId&gt;commons-collections&lt;/artifactId&gt;</div><div class="line">  &lt;version&gt;3.2&lt;/version&gt;</div><div class="line">&lt;/dependency&gt;</div></pre></td></tr></table></figure></p>
+<p>使用MapUtil传递的参数需要传递map，获取指定属性的值，如果没有获取到该属性，则赋值-2，表示系统内部错误<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int result = MapUtils.getInteger(map, &quot;result&quot;, -2);</div></pre></td></tr></table></figure></p>
+<p>接着就可以通过result进行判断<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">if(result == 1)&#123;</div><div class="line">	SuccessKilled sk = successKilledDao.queryByIdWithSeckill(seckillId, userPhone);</div><div class="line">	return new SeckillExecution(seckillId, SeckillStateEnum.SUCCESS, sk);</div><div class="line">&#125;else&#123;</div><div class="line">	return new SeckillExecution(seckillId, SeckillStateEnum.stateOf(result));</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>如果等于1，获取用户购买明细，返回SeckillExecution对象，否则也返回SeckillExecution对象，但是可能是各种各样的异常，所以使用SeckillStateEnum的stateOf方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">public static SeckillStateEnum stateOf(int index)&#123;</div><div class="line">	for(SeckillStateEnum state : values())&#123;</div><div class="line">		if(state.getState() == index)&#123;</div><div class="line">			return state;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	return null;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>通过传递的数字对应相应的字符串，如果不在数据字典中的异常，就要在catch中再返回一次，传递的参数是系统错误<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">logger.error(e.getMessage(), e);</div><div class="line">return new SeckillExecution(seckillId, SeckillStateEnum.INNER_ERROR);</div></pre></td></tr></table></figure></p>
+<p>至此，高并发优化完成了</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/01/25/Java笔记之高并发秒杀API-五/" rel="next" title="Java笔记之高并发秒杀API(五)">
+                <i class="fa fa-chevron-left"></i> Java笔记之高并发秒杀API(五)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/touxiang.JPG"
+               alt="Fzero" />
+          <p class="site-author-name" itemprop="name">Fzero</p>
+          <p class="site-description motion-element" itemprop="description">在迷踪岛满级的熊猫信仰贼</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#高并发优化分析"><span class="nav-number">1.</span> <span class="nav-text">高并发优化分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#获取系统时间"><span class="nav-number">1.1.</span> <span class="nav-text">获取系统时间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#秒杀地址接口分析"><span class="nav-number">1.2.</span> <span class="nav-text">秒杀地址接口分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#秒杀操作优化分析"><span class="nav-number">1.3.</span> <span class="nav-text">秒杀操作优化分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java控制事务行为分析"><span class="nav-number">1.4.</span> <span class="nav-text">Java控制事务行为分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis后端缓存优化"><span class="nav-number">2.</span> <span class="nav-text">Redis后端缓存优化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#秒杀操作并发优化"><span class="nav-number">3.</span> <span class="nav-text">秒杀操作并发优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单优化"><span class="nav-number">3.1.</span> <span class="nav-text">简单优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#深度优化"><span class="nav-number">3.2.</span> <span class="nav-text">深度优化</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fzero</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
