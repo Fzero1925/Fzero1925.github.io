@@ -1,0 +1,853 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇将完成准备工作及DAO层
+
+使用maven创建项目
+建立数据库
+DAO层接口及测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java笔记之员工管理系统(一)">
+<meta property="og:url" content="http://yoursite.com/2017/02/17/Java笔记之员工管理系统-一/index.html">
+<meta property="og:site_name" content="Fzero">
+<meta property="og:description" content="本篇将完成准备工作及DAO层
+
+使用maven创建项目
+建立数据库
+DAO层接口及测试">
+<meta property="og:updated_time" content="2017-02-16T19:20:32.540Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java笔记之员工管理系统(一)">
+<meta name="twitter:description" content="本篇将完成准备工作及DAO层
+
+使用maven创建项目
+建立数据库
+DAO层接口及测试">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/02/17/Java笔记之员工管理系统-一/"/>
+
+
+
+
+
+  <title> Java笔记之员工管理系统(一) | Fzero </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-89586659-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Fzero</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+    
+      <p class="site-subtitle"></p>
+    
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup">
+ <span class="search-icon fa fa-search"></span>
+ <input type="text" id="local-search-input">
+ <div id="local-search-result"></div>
+ <span class="popup-btn-close">close</span>
+</div>
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/02/17/Java笔记之员工管理系统-一/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="Fzero">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="/images/touxiang.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="Fzero">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="Fzero" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java笔记之员工管理系统(一)
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-02-17T03:16:37+08:00">
+                2017-02-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇将完成准备工作及DAO层</p>
+<ul>
+<li>使用maven创建项目</li>
+<li>建立数据库</li>
+<li>DAO层接口及测试</li>
+</ul>
+<a id="more"></a>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>这次后端使用的框架为Struts2+Spring+MyBatis+Oracle，由于之前做的秒杀系统是典型的SSM框架，所以本篇就长话短说</p>
+<p>使用maven建立项目的过程就省略了，直接看引入的依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div></pre></td><td class="code"><pre><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;junit&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;junit&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;3.8.1&lt;/version&gt;</div><div class="line">     &lt;scope&gt;test&lt;/scope&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- 将junit版本由3.8.1改为4.11 因为junit3.0是默认使用编程的方式 4.0的默认使用注解的方式来运行junit --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;junit&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;junit&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.11&lt;/version&gt;</div><div class="line">     &lt;scope&gt;test&lt;/scope&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.slf4j&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;slf4j-api&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;1.7.12&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;logback-core&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;1.1.1&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- 实现slf4j接口并整合 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;1.1.1&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Oracle数据库相关依赖(需要手动下载) --&gt;</div><div class="line"></div><div class="line">&lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;c3p0&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;c3p0&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;0.9.1.2&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- DAO框架:Mybatis相关依赖 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.mybatis&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;mybatis&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;3.3.0&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Mybatis自身实现Spring的整合依赖 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.mybatis&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;mybatis-spring&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;1.2.3&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Servlet Web相关依赖 --&gt;</div><div class="line">    &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;taglibs&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;standard&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;1.1.2&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;jstl&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;jstl&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;1.2&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;com.fasterxml.jackson.core&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;jackson-databind&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;2.5.4&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;javax.servlet&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;javax.servlet-api&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;3.1.0&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Spring依赖 --&gt;</div><div class="line">   &lt;!-- Spring核心依赖 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-core&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-aop&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-beans&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-context&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Spring Dao层的依赖 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-jdbc&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-tx&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Spring WEB相关的依赖 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-web&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div><div class="line">   </div><div class="line">   &lt;!-- Spring test相关的依赖 --&gt;</div><div class="line">   &lt;dependency&gt;</div><div class="line">     &lt;groupId&gt;org.springframework&lt;/groupId&gt;</div><div class="line">     &lt;artifactId&gt;spring-test&lt;/artifactId&gt;</div><div class="line">     &lt;version&gt;4.2.9.RELEASE&lt;/version&gt;</div><div class="line">   &lt;/dependency&gt;</div></pre></td></tr></table></figure></p>
+<p>有关数据库的依赖，Ojdbc14是收费的，maven的仓库中没有，Ojdbc6是不收费的，但不知为何也无法从maven中下载，但是我在官网上下载的时候总是停在99.2%，N次都是这样，所以百度一个就行，然后在项目中手动的引用</p>
+<p>上面的依赖和之前都一样，下面引入Struts2的依赖<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div></pre></td><td class="code"><pre><div class="line">    &lt;!-- Struts2相关依赖 --&gt;</div><div class="line">    &lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.apache.struts&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;struts2-core&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;2.5.8&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.apache.struts&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;struts2-spring-plugin&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;2.5.8&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.ow2.asm&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;asm&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;5.2&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.ow2.asm&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;asm-commons&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;5.2&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;commons-io&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;commons-io&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;2.3&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.apache.commons&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;commons-lang3&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;3.3.2&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;commons-fileupload&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;commons-fileupload&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;1.3.1&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">&lt;!-- 	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.freemarker&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;freemarker&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;2.3.23&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;ognl&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;ognl&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;3.1.10&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.javassist&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;javassist&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;3.20.0-GA&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt; --&gt;</div><div class="line">	</div><div class="line">	&lt;dependency&gt;</div><div class="line">      &lt;groupId&gt;org.apache.struts.xwork&lt;/groupId&gt;</div><div class="line">      &lt;artifactId&gt;xwork-core&lt;/artifactId&gt;</div><div class="line">      &lt;version&gt;2.3.30&lt;/version&gt;</div><div class="line">	&lt;/dependency&gt;</div></pre></td></tr></table></figure></p>
+<p>被注释掉的依赖是在因为在其他依赖中包含的有，而且版本和这个不一样 ，所以没必要再引入其他的版本</p>
+<h2 id="建立数据库"><a href="#建立数据库" class="headerlink" title="建立数据库"></a>建立数据库</h2><p>本次项目使用的数据库是Oracle 11g，安装过程就不赘述了，很简单，在安装过程中输入的密码就是以后sys/system用户的密码</p>
+<p>首先登陆Oracle的system用户来建立表空间，可以使用SqlPlus，也可以使用图形化工具SQLDeveloper，建议从官网上下载图形化工具<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">system/你的密码 </div><div class="line">或者</div><div class="line">sys/你的密码 as sysdba</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">-- 创建表空间</div><div class="line">create tablespace management </div><div class="line">datafile &apos;management.dbf&apos; </div><div class="line">size 10m -- 数据文件初始大小</div><div class="line">autoextend on -- 表空间容量不足时自动扩展</div><div class="line">next 5m -- 表空间每扩展一次增加5m</div><div class="line">;</div></pre></td></tr></table></figure>
+<p>该表空间初始大小为10M，当容量不足时会自动扩展，每次扩展5M，也可以设置空间容量上限和下限</p>
+<p>建立员工信息表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line">-- 创建员工表，先查看user_objects表中是否存在相同名称的表，如果有就删除</div><div class="line">prompt create table staff 员工信息表...</div><div class="line">declare </div><div class="line">	rowcount number(10);</div><div class="line">begin </div><div class="line">	select count(*) into rowcount from dual where exists(</div><div class="line">		select * from user_objects where object_name = upper(&apos;staff&apos;)</div><div class="line">	);</div><div class="line">	if rowcount = 1 then</div><div class="line">		execute immediate &apos;drop table staff&apos;;</div><div class="line">	end if;</div><div class="line">end;</div><div class="line">/</div><div class="line"></div><div class="line"></div><div class="line">create table staff(</div><div class="line">	id number(12,0) not null primary key,</div><div class="line">	name varchar2(125),</div><div class="line">	gender number(1,0),-- 0:male 1:female</div><div class="line">	job varchar2(20),</div><div class="line">	salary number(12,0),</div><div class="line">	department varchar2(20),</div><div class="line">	email varchar2(125),</div><div class="line">	regdate date</div><div class="line">) tablespace management;</div></pre></td></tr></table></figure></p>
+<p>在创建表之前，先判断数据库中有没有相同名称的表，数据库中表的信息都存放在user_objects中，如果里面有相同名称的表，就立刻删除它</p>
+<p>创建表最后指定表存放在management表空间中</p>
+<p>由于Oracle不支持自增主键（感觉好不方便），可以使用Oracle的序列<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">-- 创建序列，实现自增主键功能</div><div class="line">-- 使用方法：在执行insert语句的时候，在主键的值中调用序列的nextval方法，即management_primary_key.nextval</div><div class="line">create SEQUENCE staff_seq start with 1 increment by 1 ;</div></pre></td></tr></table></figure></p>
+<p>SEQUENCE关键字后面跟序列名</p>
+<ul>
+<li>start with：开始值</li>
+<li>increment by：每次增加的个数</li>
+</ul>
+<p>使用方法</p>
+<ul>
+<li>nextval：返回序列中下一个有效的值，任何用户都可以引用</li>
+<li>currval：存放序列的当前值</li>
+</ul>
+<p>这些都是一部分，还有一些参数和方法本项目没有用到，就不提了</p>
+<p>建立职位表<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">prompt create table position 职位表...</div><div class="line">declare </div><div class="line">	rowcount number(10);</div><div class="line">begin </div><div class="line">	select count(*) into rowcount from dual where exists(</div><div class="line">		select * from user_objects where object_name = upper(&apos;positon&apos;)</div><div class="line">	);</div><div class="line">	if rowcount = 1 then</div><div class="line">		execute immediate &apos;drop table position&apos;;</div><div class="line">	end if;</div><div class="line">end;</div><div class="line">/</div><div class="line"></div><div class="line">create table position(</div><div class="line">	id number(10) not null primary key,</div><div class="line">	job varchar2(20) not null</div><div class="line">)tablespace management;</div><div class="line"></div><div class="line">-- 创建职位表的自增序列</div><div class="line">create SEQUENCE position_seq start with 1 increment by 1;</div></pre></td></tr></table></figure></p>
+<p>虽然职位表的内容比较固定，但是还是使用序列来实现自增主键</p>
+<p>插入数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">-- 插入员工测试数据</div><div class="line">insert into staff(id,name,gender,job,salary,email,regdate)</div><div class="line">	values(staff_seq.nextval,&apos;小明&apos;,0,&apos;Java&apos;,2500,&apos;xiaoming@gmail.com&apos;,sysdate);</div><div class="line">insert into staff(id,name,gender,job,salary,email,regdate)</div><div class="line">	values(staff_seq.nextval,&apos;小花&apos;,1,&apos;美工&apos;,2000,&apos;xiaohua@gmail.com&apos;,sysdate);</div><div class="line">insert into staff(id,name,gender,job,salary,email,regdate)</div><div class="line">	values(staff_seq.nextval,&apos;小红&apos;,1,&apos;前端&apos;,3000,&apos;xiaohong@gmail.com&apos;,add_months(sysdate,-6));</div><div class="line">insert into staff(id,name,gender,job,salary,email,regdate)</div><div class="line">	values(staff_seq.nextval,&apos;小王&apos;,0,&apos;PHP&apos;,2500,&apos;xiaowang@gmail.com&apos;,add_months(sysdate,-3));</div><div class="line">insert into staff(id,name,gender,job,salary,email,regdate)</div><div class="line">	values(staff_seq.nextval,&apos;小张&apos;,0,&apos;产品&apos;,4000,&apos;xiaozhang@gmail.com&apos;,add_months(sysdate,-12));</div><div class="line"></div><div class="line"></div><div class="line">-- 插入职位表数据</div><div class="line">insert into position(id,job) values(position_seq.nextval,&apos;Java&apos;);</div><div class="line">insert into position(id,job) values(position_seq.nextval,&apos;PHP&apos;);</div><div class="line">insert into position(id,job) values(position_seq.nextval,&apos;美工&apos;);</div><div class="line">insert into position(id,job) values(position_seq.nextval,&apos;前端&apos;);</div><div class="line">insert into position(id,job) values(position_seq.nextval,&apos;产品&apos;);</div></pre></td></tr></table></figure></p>
+<h3 id="DAO层相关接口编码"><a href="#DAO层相关接口编码" class="headerlink" title="DAO层相关接口编码"></a>DAO层相关接口编码</h3><p>先在java目录下建立两个包：</p>
+<ul>
+<li>management.entity：数据库对应的实体包</li>
+<li>management.dao：DAO层接口包</li>
+</ul>
+<p>在entity包中建立数据库对应的实体类，先是Staff类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line">public class Staff &#123;</div><div class="line">	</div><div class="line">	private long id;</div><div class="line">	</div><div class="line">	private String name;</div><div class="line">	</div><div class="line">	private int gender;</div><div class="line">	</div><div class="line">	private String job;</div><div class="line">	</div><div class="line">	private long salary;</div><div class="line">	</div><div class="line">	private String fepartment;</div><div class="line">	</div><div class="line">	private String email;</div><div class="line">	</div><div class="line">	private Date regDate;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public String toString() &#123;</div><div class="line">		return &quot;Staff [id=&quot; + id + &quot;, name=&quot; + name </div><div class="line">				+ &quot;, gender=&quot; + gender  + &quot;, job=&quot; </div><div class="line">				+ job + &quot;, salary=&quot; + salary</div><div class="line">				+ &quot;, fepartment=&quot; + fepartment </div><div class="line">				+ &quot;, email=&quot; + email + &quot;, regDate=&quot; </div><div class="line">				+ regDate </div><div class="line">				+ &quot;]&quot;;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>重写toString方法，并生成getter和setter方法，这里就不显示了</p>
+<p>接着是Position类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public class Position &#123;</div><div class="line">	</div><div class="line">	private long id;</div><div class="line">	</div><div class="line">	private String name;</div><div class="line"></div><div class="line">	@Override</div><div class="line">	public String toString() &#123;</div><div class="line">		return &quot;Position [id=&quot; + id + &quot;, name=&quot; + name + &quot;]&quot;;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong> 数据库的行名要与实体类的属性名完全一样 </strong>，不用担心数据库中使用的是下划线，而Java使用的是驼峰命名，后面MyBatis配置中可以开启驼峰命名转换，会把执行后的结果中下划线转换为驼峰命名，如果这里不一样，后面测试的时候虽然会成功连接数据库，但是获取的都是null</p>
+<p>在dao包下新建一个StaffDAO接口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">public interface StaffDao &#123;</div><div class="line">	</div><div class="line">	/**</div><div class="line">	 * 根据id查询员工信息</div><div class="line">	 * @param staffId</div><div class="line">	 * @return</div><div class="line">	 */</div><div class="line">	Staff queryStaffById(long id);</div><div class="line">	</div><div class="line">	/**</div><div class="line">	 * 增加员工</div><div class="line">	 * @param staff</div><div class="line">	 * @return</div><div class="line">	 */</div><div class="line">	int addStaff(Staff staff);</div><div class="line">	</div><div class="line">	/**</div><div class="line">	 * 删除员工信息</div><div class="line">	 * @param staffId</div><div class="line">	 * @return</div><div class="line">	 */</div><div class="line">	int deleteStaff(int id);</div><div class="line">	</div><div class="line">	/**</div><div class="line">	 * 更新员工信息（涨工资等）</div><div class="line">	 * @param staffId</div><div class="line">	 * @return</div><div class="line">	 */</div><div class="line">	int updateStaffs(Staff staff);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>暂时先有这四个基本方法，增删改查，后面有需要的话，再添加即可</p>
+<p>同样在dao包下新建一个PositionDao接口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">public interface PositionDao &#123;</div><div class="line">	</div><div class="line">	/**</div><div class="line">	 * 增加职位</div><div class="line">	 * @param positionId</div><div class="line">	 * @param positionName</div><div class="line">	 * @return</div><div class="line">	 */</div><div class="line">	int addPosition(int id, String name);</div><div class="line">	</div><div class="line">	/**</div><div class="line">	 * 删除职位</div><div class="line">	 * @param positionId</div><div class="line">	 * @return</div><div class="line">	 */</div><div class="line">	int deletePosition(int id);</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="基于MyBatis实现DAO层接口"><a href="#基于MyBatis实现DAO层接口" class="headerlink" title="基于MyBatis实现DAO层接口"></a>基于MyBatis实现DAO层接口</h3><p>先在src\main\resources下建立一个MyBatis全局的配置文件mybatis-conf.xml，再新建一个mapper目录，用于存放MyBatis的SQL映射</p>
+<h4 id="MyBatis配置"><a href="#MyBatis配置" class="headerlink" title="MyBatis配置"></a>MyBatis配置</h4><p>打开MyBatis全局配置文件mybatis-config.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;!DOCTYPE configuration</div><div class="line">  PUBLIC &quot;-//mybatis.org//DTD Config 3.0//EN&quot;</div><div class="line">  &quot;http://mybatis.org/dtd/mybatis-3-config.dtd&quot;&gt;</div><div class="line">  </div><div class="line">&lt;configuration&gt;</div><div class="line">	&lt;!-- 配置全局属性 --&gt;</div><div class="line">	&lt;settings&gt;</div><div class="line">		&lt;!-- 使用列别名替换列名 默认为true --&gt;</div><div class="line">		&lt;setting name=&quot;useColumnLabel&quot; value=&quot;true&quot;/&gt;</div><div class="line">		</div><div class="line">		&lt;!-- 开启驼峰命名转换 --&gt;</div><div class="line">		&lt;setting name=&quot;mapUnderscoreToCamelCase&quot; value=&quot;true&quot;/&gt;</div><div class="line">	&lt;/settings&gt;</div><div class="line">&lt;/configuration&gt;</div></pre></td></tr></table></figure></p>
+<p>就是在这里开启驼峰命名转换</p>
+<h4 id="DAO层接口SQL语句配置"><a href="#DAO层接口SQL语句配置" class="headerlink" title="DAO层接口SQL语句配置"></a>DAO层接口SQL语句配置</h4><p>本次实现DAO层的接口依旧使用MyBatis的mapper机制，为DAO接口方法提供SQL语句配置</p>
+<p>所以在resources目录下新建一个mapper文件夹下，然后创建相应接口的配置文件StaffDao.xml和PositionDao.xml</p>
+<p>打开StaffDao.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;!DOCTYPE mapper</div><div class="line">    PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;</div><div class="line">    &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;</div><div class="line"></div><div class="line">&lt;!-- 为DAO层接口方法提供SQL语句配置 --&gt;</div><div class="line">&lt;mapper namespace=&quot;management.dao.StaffDao&quot;&gt;</div><div class="line"></div><div class="line">	&lt;select id=&quot;queryStaffById&quot; resultType=&quot;Staff&quot;&gt;</div><div class="line">		select name,gender,job,salary,email,regdate</div><div class="line">		from staff</div><div class="line">		where id = #&#123;id&#125;</div><div class="line">	&lt;/select&gt;</div><div class="line">	</div><div class="line">	&lt;insert id=&quot;addStaff&quot; parameterType=&quot;Staff&quot;&gt;</div><div class="line">		insert ignore into staff</div><div class="line">			(id,name,gender,job,salary,email,regdate)</div><div class="line">		values</div><div class="line">			(staff_seq.nextval,#&#123;name&#125;,#&#123;gender&#125;,#&#123;job&#125;,#&#123;salary&#125;,#&#123;email&#125;,#&#123;regdate&#125;)</div><div class="line">	&lt;/insert&gt;</div><div class="line">	</div><div class="line">	&lt;delete id=&quot;deleteStaff&quot;&gt;</div><div class="line">		delete from staff </div><div class="line">		where id = #&#123;id&#125;</div><div class="line">	&lt;/delete&gt;</div><div class="line">	</div><div class="line">	&lt;update id=&quot;updateStaffs&quot;&gt;</div><div class="line">		update staff </div><div class="line">		set</div><div class="line">			name = #&#123;name&#125;,</div><div class="line">			gender = #&#123;gender&#125;,</div><div class="line">			job = #&#123;job&#125;,</div><div class="line">			salary = #&#123;salary&#125;,</div><div class="line">			email = #&#123;email&#125;,</div><div class="line">			regdate = #&#123;regdate&#125;</div><div class="line">		where</div><div class="line">			id = #&#123;id&#125;</div><div class="line">	&lt;/update&gt;</div><div class="line"></div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure></p>
+<p>都是再基础不过的基本语句</p>
+<p>打开PositionDao.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;!DOCTYPE mapper</div><div class="line">    PUBLIC &quot;-//mybatis.org//DTD Mapper 3.0//EN&quot;</div><div class="line">    &quot;http://mybatis.org/dtd/mybatis-3-mapper.dtd&quot;&gt;</div><div class="line">    </div><div class="line">&lt;mapper namespace=&quot;management.dao.PositionDao&quot;&gt;</div><div class="line"></div><div class="line">	&lt;insert id=&quot;addPosition&quot; parameterType=&quot;Position&quot;&gt;</div><div class="line">		insert ignore into position(id,job)</div><div class="line">		values (position_seq.nextval,#&#123;job&#125;)</div><div class="line">	&lt;/insert&gt;</div><div class="line">	</div><div class="line">	&lt;delete id=&quot;deletePosition&quot;&gt;</div><div class="line">		delete from position</div><div class="line">		where id = #&#123;id&#125;</div><div class="line">	&lt;/delete&gt;</div><div class="line"></div><div class="line">&lt;/mapper&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="Spring配置"><a href="#Spring配置" class="headerlink" title="Spring配置"></a>Spring配置</h4><p>在resources目录下新建一个spring文件夹，接着新建一个spring-dao.xml<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</div><div class="line">&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;</div><div class="line">    xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</div><div class="line">    xmlns:context=&quot;http://www.springframework.org/schema/context&quot;</div><div class="line">    xsi:schemaLocation=&quot;</div><div class="line">    	http://www.springframework.org/schema/beans</div><div class="line">        http://www.springframework.org/schema/beans/spring-beans.xsd</div><div class="line">        http://www.springframework.org/schema/context</div><div class="line">        http://www.springframework.org/schema/context/spring-context.xsd&quot;&gt;</div><div class="line">    </div><div class="line">    &lt;!-- 加载数据库相关参数 --&gt;</div><div class="line">    &lt;context:property-placeholder location=&quot;classpath:jdbc.properties&quot;/&gt;</div><div class="line">    </div><div class="line">    &lt;!-- 配置数据库连接池 --&gt;</div><div class="line">    &lt;bean id=&quot;dataSource&quot; class=&quot;com.mchange.v2.c3p0.ComboPooledDataSource&quot;&gt;</div><div class="line">    	&lt;!-- 配置连接池属性 --&gt;    	</div><div class="line">    	&lt;property name=&quot;driverClass&quot; value=&quot;$&#123;db.driver&#125;&quot;/&gt;</div><div class="line">    	&lt;property name=&quot;jdbcUrl&quot; value=&quot;$&#123;db.url&#125;&quot;/&gt;</div><div class="line">    	&lt;property name=&quot;user&quot; value=&quot;$&#123;db.user&#125;&quot;/&gt;</div><div class="line">    	&lt;property name=&quot;password&quot; value=&quot;$&#123;db.password&#125;&quot;/&gt;</div><div class="line">    	</div><div class="line">    	&lt;!-- 配置连接池私有属性 --&gt;</div><div class="line">    	&lt;!-- 关闭连接后不自动commit --&gt;</div><div class="line">    	&lt;property name=&quot;autoCommitOnClose&quot; value=&quot;false&quot;/&gt;</div><div class="line">    &lt;/bean&gt;</div><div class="line">    </div><div class="line">    &lt;!-- 配置SqlSessionFactory对象 --&gt;</div><div class="line">    &lt;bean id=&quot;sqlSessionFactory&quot; class=&quot;org.mybatis.spring.SqlSessionFactoryBean&quot;&gt;</div><div class="line">    	&lt;!-- 注入数据库连接池 --&gt;    </div><div class="line">    	&lt;property name=&quot;dataSource&quot; ref=&quot;dataSource&quot;/&gt;</div><div class="line">    	&lt;!-- 配置MyBatis全局配置文件，即mybatis-config.xml --&gt;</div><div class="line">    	&lt;property name=&quot;configLocation&quot; value=&quot;classpath:mybatis-config.xml&quot;/&gt;</div><div class="line">    	&lt;!-- 扫描entity包，使用别名 省略包名 --&gt;</div><div class="line">    	&lt;property name=&quot;typeAliasesPackage&quot; value=&quot;management.entity&quot;/&gt;</div><div class="line">    	&lt;!-- 扫描SQL配置文件 即mapper目录下的xml文件 --&gt;</div><div class="line">    	&lt;property name=&quot;mapperLocations&quot; value=&quot;classpath:mapper/*.xml&quot;/&gt;</div><div class="line">    &lt;/bean&gt;</div><div class="line">    </div><div class="line">    &lt;!-- 配置扫描DAO接口包  动态实现DAO接口并注入到Spring容器中 --&gt;</div><div class="line">    &lt;bean class=&quot;org.mybatis.spring.mapper.MapperScannerConfigurer&quot;&gt;</div><div class="line">    	&lt;!-- 注入SqlSessionFactory --&gt;    </div><div class="line">    	&lt;property name=&quot;sqlSessionFactoryBeanName&quot; value=&quot;sqlSessionFactory&quot;/&gt;</div><div class="line">    	&lt;!-- 扫描DAO层下的接口 --&gt;</div><div class="line">    	&lt;property name=&quot;basePackage&quot; value=&quot;management.dao&quot;&gt;&lt;/property&gt;</div><div class="line">    &lt;/bean&gt;</div><div class="line">        </div><div class="line">&lt;/beans&gt;</div></pre></td></tr></table></figure></p>
+<p>首先是要加载数据库相关参数，用于jdbc连接Oracle数据库</p>
+<p>在resources目录下新建一个jdbc.properties文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">db.driver=oracle.jdbc.driver.OracleDriver</div><div class="line">db.url=jdbc:oracle:thin:@localhost:1521:orcl</div><div class="line">db.user=scott</div><div class="line">db.password=tiger</div></pre></td></tr></table></figure></p>
+<p>和MySQL的配置略微不同，Oracle数据库默认端口是1521，orcl就是在安装时数据库的名字，这里使用普通用户</p>
+<p>然后可以进行简单的测试，建立个测试类，由于这次的方法太简单，就不再显示了，我之前为了那个数据库的行名和实体类的属性不一致，浪费了两个小时的时间</p>
+<p>至此，DAO层完成了</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/02/14/Java笔记之高并发秒杀API-终/" rel="next" title="Java笔记之高并发秒杀API(终)">
+                <i class="fa fa-chevron-left"></i> Java笔记之高并发秒杀API(终)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/touxiang.JPG"
+               alt="Fzero" />
+          <p class="site-author-name" itemprop="name">Fzero</p>
+          <p class="site-description motion-element" itemprop="description">在迷踪岛满级的熊猫信仰贼</p>
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#准备工作"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#建立数据库"><span class="nav-number">2.</span> <span class="nav-text">建立数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DAO层相关接口编码"><span class="nav-number">2.1.</span> <span class="nav-text">DAO层相关接口编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基于MyBatis实现DAO层接口"><span class="nav-number">2.2.</span> <span class="nav-text">基于MyBatis实现DAO层接口</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MyBatis配置"><span class="nav-number">2.2.1.</span> <span class="nav-text">MyBatis配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#DAO层接口SQL语句配置"><span class="nav-number">2.2.2.</span> <span class="nav-text">DAO层接口SQL语句配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Spring配置"><span class="nav-number">2.2.3.</span> <span class="nav-text">Spring配置</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Fzero</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length == 0) {
+      search_path = "search.xml";
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    function proceedsearch() {
+      $("body").append('<div class="popoverlay">').css('overflow', 'hidden');
+      $('.popup').toggle();
+    }
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+      $.ajax({
+        url: path,
+        dataType: "xml",
+        async: true,
+        success: function( xmlResponse ) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = $( "entry", xmlResponse ).map(function() {
+            return {
+              title: $( "title", this ).text(),
+              content: $("content",this).text(),
+              url: $( "url" , this).text()
+            };
+          }).get();
+          var $input = document.getElementById(search_id);
+          var $resultContent = document.getElementById(content_id);
+          $input.addEventListener('input', function(){
+            var matchcounts = 0;
+            var str='<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length > 1) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var content_index = [];
+                var data_title = data.title.trim().toLowerCase();
+                var data_content = data.content.trim().replace(/<[^>]+>/g,"").toLowerCase();
+                var data_url = decodeURIComponent(data.url);
+                var index_title = -1;
+                var index_content = -1;
+                var first_occur = -1;
+                // only match artiles with not empty titles and contents
+                if(data_title != '') {
+                  keywords.forEach(function(keyword, i) {
+                    index_title = data_title.indexOf(keyword);
+                    index_content = data_content.indexOf(keyword);
+                    if( index_title >= 0 || index_content >= 0 ){
+                      isMatch = true;
+                      if (i == 0) {
+                        first_occur = index_content;
+                      }
+                    }
+
+                  });
+                }
+                // show search results
+                if (isMatch) {
+                  matchcounts += 1;
+                  str += "<li><a href='"+ data_url +"' class='search-result-title'>"+ data_title +"</a>";
+                  var content = data.content.trim().replace(/<[^>]+>/g,"");
+                  if (first_occur >= 0) {
+                    // cut out 100 characters
+                    var start = first_occur - 20;
+                    var end = first_occur + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if(start == 0){
+                      end = 50;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    var match_content = content.substring(start, end);
+                    // highlight all keywords
+                    keywords.forEach(function(keyword){
+                      var regS = new RegExp(keyword, "gi");
+                      match_content = match_content.replace(regS, "<b class=\"search-keyword\">"+keyword+"</b>");
+                    });
+
+                    str += "<p class=\"search-result\">" + match_content +"...</p>"
+                  }
+                  str += "</li>";
+                }
+              })};
+            str += "</ul>";
+            if (matchcounts == 0) { str = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>' }
+            if (keywords == "") { str = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>' }
+            $resultContent.innerHTML = str;
+          });
+          proceedsearch();
+        }
+      });}
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched == false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(function(e){
+      $('.popup').hide();
+      $(".popoverlay").remove();
+      $('body').css('overflow', '');
+    });
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+  </script>
+
+
+  
+  
+
+
+  
+
+  
+
+  
+
+
+</body>
+</html>
